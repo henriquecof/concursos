@@ -1,0 +1,6 @@
+LICENSE
+README.md
+Track_Concursos.egg-info/PKG-INFO
+Track_Concursos.egg-info/SOURCES.txt
+Track_Concursos.egg-info/dependency_links.txt
+Track_Concursos.egg-info/top_level.txt

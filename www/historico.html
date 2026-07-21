@@ -1,0 +1,1962 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="theme.js"></script>
+<title>Track Concursos — Métricas</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root {
+    --bg:#0d0f14; --bg2:#13161e; --bg3:#1a1e2a; --bg4:#1f2330;
+    --border:#252836; --border2:#2e3347;
+    --accent:#4f8ef7; --accent2:#7c5cfc;
+    --text:#e8eaf2; --text2:#f1f2f6; --text3:#a1a6c2;
+    --green:#3ecf8e; --green2:#27a06b; --yellow:#FFD700; --orange:#f5874a; --red:#f55a5a;
+    --mono:'Inter',sans-serif; --sans:'Inter',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-variant-numeric:tabular-nums;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
+
+  /* SIDEBAR */
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 0;z-index:100;}
+  .sidebar-logo {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .brand-logo {
+    height: 36px;
+    max-width: 180px;
+    width: auto;
+    object-fit: contain;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .brand-logo:hover {
+    transform: scale(1.04);
+  }
+  .nav{padding:16px 12px;flex:1;}
+  .nav-label{font-size:12px;font-weight:600;letter-spacing:1.5px;color:var(--text3);padding:0 8px;margin-bottom:8px;text-transform:uppercase;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:13.5px;font-weight:500;color:var(--text2);transition:all 0.15s;margin-bottom:2px;}
+  .nav-item:hover{background:var(--bg3);color:var(--text);}
+  .nav-item.active{background:rgba(79,142,247,0.12);color:var(--accent);}
+  .nav-item .icon{font-size:16px;width:20px;text-align:center;}
+  .sidebar-concurso{margin:0 12px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;}
+  .concurso-nome{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
+  .concurso-banca{font-size:12px;color:var(--text3);margin-bottom:10px;}
+  .timer-box{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center;}
+  .timer-num{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--accent);line-height:1;}
+  .timer-label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-top:3px;}
+
+  .main{margin-left:220px;min-height:100vh;padding:32px;}
+
+  /* HEADER */
+  .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;flex-wrap:wrap;}
+  .page-title{font-size:24px;font-weight:700;letter-spacing:-0.5px;margin-bottom:4px;}
+  .page-sub{font-size:12px;color:var(--text3);}
+  .header-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+
+  /* FILTROS */
+  .filtro-chip{padding:5px 14px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;}
+  .filtro-chip:hover{border-color:var(--accent);color:var(--accent);}
+  .filtro-chip.active{background:rgba(79,142,247,0.12);border-color:var(--accent);color:var(--accent);}
+  .filtro-sep{width:1px;height:20px;background:var(--border);margin:0 4px;}
+
+  /* STATS TOPO */
+  .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px;}
+  .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden;transition:border-color 0.2s;}
+  .stat-card:hover{border-color:var(--border2);}
+  .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+  .stat-card.blue::before{background:var(--accent);}
+  .stat-card.purple::before{background:var(--accent2);}
+  .stat-card.green::before{background:var(--green);}
+  .stat-card.yellow::before{background:var(--yellow);}
+  .stat-card.orange::before{background:var(--orange);}
+  .stat-icon{font-size:18px;margin-bottom:10px;display:block;}
+  .metrics-stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;text-align:center;}
+  .metrics-stat-main{display:flex;align-items:center;justify-content:center;gap:7px;min-height:28px;margin-bottom:5px;}
+  .metrics-stat-icon{--tc-stat-icon-current:var(--tc-stat-icon-fill);display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;flex:0 0 22px;color:var(--text3);}
+  :root[data-theme="light"] .metrics-stat-icon{--tc-stat-icon-current:var(--tc-stat-icon-line);}
+  .metrics-stat-icon::before{content:"";display:block;width:22px;height:22px;background:currentColor;-webkit-mask-image:var(--tc-stat-icon-current);mask-image:var(--tc-stat-icon-current);-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center;-webkit-mask-size:contain;mask-size:contain;}
+  .metrics-stat-icon[data-stat-icon="timer"]{--tc-stat-icon-line:url("assets/remix-stats/timer-line.svg");--tc-stat-icon-fill:url("assets/remix-stats/timer-fill.svg");}
+  .metrics-stat-icon[data-stat-icon="questions"]{--tc-stat-icon-line:url("assets/remix-stats/list-check-3.svg");--tc-stat-icon-fill:url("assets/remix-stats/list-check-3.svg");}
+  .metrics-stat-icon[data-stat-icon="target"]{--tc-stat-icon-line:url("assets/remix-stats/target-line.svg");--tc-stat-icon-fill:url("assets/remix-stats/target-fill.svg");}
+  .metrics-stat-icon[data-stat-icon="target-color"]::before{background:transparent url("assets/custom-icons/target-color.svg") center/contain no-repeat;-webkit-mask-image:none;mask-image:none;}
+  .metrics-stat-icon[data-stat-icon="task"]{--tc-stat-icon-line:url("assets/remix-stats/task-line.svg");--tc-stat-icon-fill:url("assets/remix-stats/task-fill.svg");}
+  .metrics-stat-value{font-family:var(--mono);font-size:20px;font-weight:700;line-height:1;}
+  .metrics-stat-label{font-size:12px;color:var(--text3);margin-top:4px;}
+  .stat-val{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--text);line-height:1;}
+  .stat-label{font-size:12px;color:var(--text3);margin-top:5px;}
+  .stat-delta{font-size:12px;font-weight:700;margin-top:3px;}
+  .stat-delta.up{color:var(--green);}
+  .stat-delta.down{color:var(--red);}
+
+  /* CARDS DE GRÁFICO */
+  .chart-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+  .chart-grid-3{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:18px;}
+  .chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;overflow:hidden;}
+  .shareable-chart-card{cursor:pointer;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+  .shareable-chart-card:hover{transform:translateY(-1px);border-color:rgba(79,142,247,.45);box-shadow:0 18px 42px rgba(0,0,0,.22)}
+  .shareable-chart-card:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  .metrics-panel-title{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;}
+  .metrics-panel-icon,.metrics-inline-icon{--metrics-icon-current:var(--metrics-icon-fill);display:inline-flex;align-items:center;justify-content:center;color:var(--accent);flex:0 0 auto;}
+  :root[data-theme="light"] .metrics-panel-icon,:root[data-theme="light"] .metrics-inline-icon{--metrics-icon-current:var(--metrics-icon-line);}
+  .metrics-panel-icon{width:18px;height:18px;}
+  .metrics-inline-icon{width:14px;height:14px;vertical-align:-2px;}
+  .metrics-panel-icon::before,.metrics-inline-icon::before{content:"";display:block;width:100%;height:100%;background:currentColor;-webkit-mask-image:var(--metrics-icon-current);mask-image:var(--metrics-icon-current);-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center;-webkit-mask-size:contain;mask-size:contain;}
+  .metrics-panel-icon[data-metrics-icon="timer"]{--metrics-icon-line:url("assets/remix-stats/timer-line.svg");--metrics-icon-fill:url("assets/remix-stats/timer-fill.svg");}
+  .metrics-panel-icon[data-metrics-icon="stacked-chart"]{--metrics-icon-line:url("assets/remix-stats/stacked-chart-line.svg");--metrics-icon-fill:url("assets/remix-stats/stacked-chart-fill.svg");color:var(--accent2);}
+  .metrics-panel-icon[data-metrics-icon="pie-chart"]{--metrics-icon-line:url("assets/remix-stats/pie-chart-line.svg");--metrics-icon-fill:url("assets/remix-stats/pie-chart-fill.svg");color:var(--green);}
+  .metrics-inline-icon[data-metrics-icon="camera-3"]{--metrics-icon-line:url("assets/remix-stats/camera-3-line.svg");--metrics-icon-fill:url("assets/remix-stats/camera-3-fill.svg");}
+  .metrics-print-label{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:900;letter-spacing:.8px;text-transform:uppercase;color:var(--accent);}
+  .chart-card.full{grid-column:1/-1;}
+  .chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .chart-title{font-size:14px;font-weight:700;color:var(--text);}
+  .chart-sub{font-size:12px;color:var(--text3);margin-top:2px;}
+  .chart-legend{display:flex;gap:12px;flex-wrap:wrap;}
+  .legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);}
+  .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .chart-wrap{position:relative;}
+
+  /* HEATMAP */
+  .heatmap-wrap{overflow-x:auto;padding-bottom:4px;}
+  .heatmap{display:flex;gap:3px;}
+  .heatmap-col{display:flex;flex-direction:column;gap:3px;}
+  .heatmap-cell{width:13px;height:13px;border-radius:2px;cursor:pointer;transition:transform 0.1s;}
+  .heatmap-cell:hover{transform:scale(1.3);}
+  .heatmap-cell.l0{background:var(--bg3);border:1px solid var(--border);}
+  .heatmap-cell.l1{background:rgba(79,142,247,0.2);}
+  .heatmap-cell.l2{background:rgba(79,142,247,0.45);}
+  .heatmap-cell.l3{background:rgba(79,142,247,0.7);}
+  .heatmap-cell.l4{background:var(--accent);}
+  .heatmap-months{display:flex;gap:0;margin-bottom:4px;padding-left:2px;}
+  .heatmap-month{font-size:12px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+  .heatmap-days{display:flex;flex-direction:column;gap:3px;margin-right:6px;padding-top:1px;}
+  .heatmap-day{font-size:8px;color:var(--text3);height:13px;display:flex;align-items:center;}
+  .heatmap-legend{display:flex;align-items:center;gap:5px;margin-top:8px;justify-content:flex-end;}
+  .heatmap-legend span{font-size:12px;color:var(--text3);}
+  .heatmap-day-btn{appearance:none;border:0;font-family:var(--sans);text-align:left;cursor:pointer;transition:transform .12s ease,border-color .12s ease,box-shadow .12s ease}
+  .heatmap-day-btn:hover{transform:translateY(-1px);border-color:rgba(79,142,247,.45)!important}
+  .heatmap-day-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .heatmap-day-out{cursor:default}
+  .heatmap-month-card{background:linear-gradient(180deg, var(--surface-soft), var(--surface-subtle));border:1px solid var(--border);border-radius:16px;padding:14px 14px 12px;min-height:238px;cursor:pointer;transition:transform .12s ease,border-color .12s ease,box-shadow .12s ease}
+  .heatmap-month-card:hover{transform:translateY(-1px);border-color:rgba(79,142,247,.34);box-shadow:0 14px 34px rgba(0,0,0,.18)}
+  .heatmap-month-card:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  .heatmap-period-btn{appearance:none;border:1px solid transparent;background:transparent;color:inherit;font-family:var(--sans);cursor:pointer;border-radius:8px;padding:3px 6px;margin:-3px -6px;transition:all .12s ease}
+  .heatmap-period-btn:hover{background:rgba(79,142,247,.10);border-color:rgba(79,142,247,.28);color:var(--accent)}
+  .heatmap-period-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .annual-analysis{display:flex;align-items:center;gap:8px;margin-left:auto}
+  .annual-analysis-label{font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+  .annual-analysis select{height:30px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:12px;font-weight:700;padding:0 8px;outline:none}
+  .annual-analysis button{height:30px;border-radius:8px;border:1px solid rgba(79,142,247,.35);background:rgba(79,142,247,.10);color:var(--accent);font-family:var(--sans);font-size:12px;font-weight:800;padding:0 10px;cursor:pointer}
+  .annual-analysis button:hover{background:rgba(79,142,247,.16)}
+
+  /* PROGRESSO POR MATÉRIA */
+  .materias-list{display:flex;flex-direction:column;gap:10px;}
+  .mat-prog-row{display:flex;align-items:center;gap:10px;}
+  .mat-prog-nome{font-size:12px;font-weight:600;color:var(--text2);width:160px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .mat-prog-bar-wrap{flex:1;}
+  .mat-prog-bar{height:8px;background:var(--bg3);border-radius:8px;overflow:hidden;}
+  .mat-prog-fill{height:100%;border-radius:8px;transition:width 0.8s ease;}
+  .mat-prog-pct{font-family:var(--mono);font-size:12px;font-weight:700;width:36px;text-align:right;flex-shrink:0;}
+  .mat-prog-topicos{font-size:12px;color:var(--text3);width:60px;text-align:right;flex-shrink:0;}
+
+  /* MELHORES DIAS */
+  .best-days{display:flex;flex-direction:column;gap:8px;}
+  .best-day-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+  .best-day-row:last-child{border-bottom:none;}
+  .best-day-rank{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text3);width:20px;flex-shrink:0;}
+  .best-day-rank.gold{color:var(--yellow);}
+  .best-day-rank.silver{color:var(--text2);}
+  .best-day-rank.bronze{color:var(--orange);}
+  .best-day-date{font-size:12px;color:var(--text2);flex:1;}
+  .best-day-hours{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent);}
+  .best-day-q{font-size:12px;color:var(--text3);width:50px;text-align:right;}
+  .today-summary-card{position:relative;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px 14px 16px;overflow:hidden}
+  .today-summary-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
+  .today-summary-grid{display:grid;grid-template-columns:minmax(0,.86fr) minmax(0,.86fr) minmax(0,1.08fr);gap:8px;align-items:stretch}
+  .today-panel{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:11px;display:flex;flex-direction:column;min-height:0}
+  .today-panel-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px}
+  .today-panel-sub{font-size:10px;color:var(--text3);margin-bottom:6px;line-height:1.2}
+  .today-chart-wrap{position:relative;height:102px}
+  .today-legend{display:flex;flex-direction:column;gap:2px;margin-top:6px}
+  .today-sessions-panel{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:11px;display:flex;flex-direction:column;min-height:0}
+  .today-sessions-list{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;padding-right:2px}
+  .today-session-item{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:6px;align-items:center;padding:7px 8px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,0.02)}
+  .today-session-hour{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent)}
+  .today-session-name{font-size:11px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .today-session-meta{font-size:10px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .today-session-duration{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text2)}
+  .today-share-btn{min-width:86px;height:34px;padding:0 12px;border-radius:10px;border:1px solid var(--border2);background:rgba(255,255,255,0.03);color:var(--text2);font-family:var(--sans);font-size:12px;font-weight:800;letter-spacing:.4px;cursor:pointer;display:flex;align-items:center;gap:6px;justify-content:center;transition:all .15s ease}
+  .today-share-btn:hover{background:rgba(79,142,247,0.10);border-color:rgba(79,142,247,0.35);transform:translateY(-1px)}
+  .today-summary-card.capture-mode{padding-bottom:66px}
+  .today-summary-card.capture-mode .today-brand{opacity:1}
+  .today-summary-card.capture-mode .today-share-btn{display:none}
+  .today-brand{position:absolute;bottom:16px;width:110px;opacity:0;transition:opacity .15s ease;pointer-events:none}
+  .today-brand.left{left:16px}
+  .today-brand.right{right:16px}
+  .today-brand img{max-width:100%;max-height:35px;object-fit:contain;display:block}
+  .today-capture-flash{animation:todayFlash .35s ease}
+  .today-summary-card .today-legend > div{padding:2px 0 !important}
+  .today-summary-card .today-legend > div div{font-size:9px !important}
+  .day-detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.68);backdrop-filter:blur(6px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px}
+  .day-detail-modal{width:min(1040px,96vw);max-height:92vh;overflow:auto;background:var(--bg2);border:1px solid var(--border2);border-radius:18px;box-shadow:0 28px 90px rgba(0,0,0,.45);padding:20px}
+  .day-detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:16px}
+  .day-detail-title{font-size:18px;font-weight:800;color:var(--text);margin-bottom:4px}
+  .day-detail-sub{font-size:12px;color:var(--text3)}
+  .day-detail-close{width:36px;height:36px;border-radius:10px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:18px;font-weight:800}
+  .day-detail-close:hover{border-color:var(--accent);color:var(--accent)}
+  .day-detail-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+  .day-detail-stat{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px}
+  .day-detail-stat-value{font-family:var(--mono);font-size:18px;font-weight:800;color:var(--text)}
+  .day-detail-stat-label{font-size:11px;color:var(--text3);margin-top:4px}
+  .day-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+  .day-detail-panel{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:14px;min-width:0}
+  .day-detail-panel-title{font-size:12px;font-weight:800;color:var(--text);margin-bottom:4px}
+  .day-detail-panel-sub{font-size:11px;color:var(--text3);margin-bottom:10px}
+  .day-detail-chart{height:160px}
+  .day-detail-chart-layout{display:grid;grid-template-columns:150px minmax(0,1fr);gap:14px;align-items:center}
+  .day-detail-chart-legend{display:flex;flex-direction:column;gap:8px}
+  .day-detail-legend-row{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:12px;color:var(--text2)}
+  .day-detail-legend-dot{width:10px;height:10px;border-radius:3px}
+  .day-detail-legend-name{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .day-detail-legend-meta{font-family:var(--mono);font-size:11px;color:var(--text3);text-align:right}
+  .day-detail-materia-row{display:grid;grid-template-columns:minmax(0,1fr) 90px 74px;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+  .day-detail-materia-row:last-child{border-bottom:0}
+  .day-detail-materia-name{font-size:12px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .day-detail-materia-meta{font-size:11px;color:var(--text3);margin-top:3px}
+  .day-detail-bar{height:7px;background:rgba(255,255,255,.04);border-radius:99px;overflow:hidden;margin-top:7px}
+  .day-detail-bar-fill{height:100%;border-radius:99px;background:var(--accent)}
+  .day-detail-bar-label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;font-size:10px;font-weight:800;letter-spacing:.35px;text-transform:uppercase;color:var(--text3)}
+  .day-detail-list{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow:auto;padding-right:2px}
+  .day-detail-empty{font-size:12px;color:var(--text3);text-align:center;padding:18px;border:1px dashed var(--border);border-radius:12px}
+  .cycle-goal-panel{background:linear-gradient(135deg,rgba(79,142,247,.10),rgba(62,207,142,.06));border:1px solid rgba(79,142,247,.24);border-radius:14px;padding:14px;margin-bottom:12px}
+  .cycle-goal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .cycle-goal-title{font-size:13px;font-weight:900;color:var(--text);margin-bottom:4px}
+  .cycle-goal-sub{font-size:11px;color:var(--text3);line-height:1.4}
+  .cycle-goal-badge{font-family:var(--mono);font-size:12px;font-weight:900;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.10);white-space:nowrap}
+  .cycle-goal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}
+  .cycle-goal-stat{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:10px}
+  .cycle-goal-value{font-family:var(--mono);font-size:16px;font-weight:900;color:var(--text)}
+  .cycle-goal-label{font-size:10px;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:.4px}
+  .cycle-goal-matters{display:flex;flex-direction:column;gap:8px}
+  .cycle-goal-row{display:grid;grid-template-columns:minmax(0,1fr) 74px 74px 74px;gap:10px;align-items:center;padding:8px 0;border-top:1px solid rgba(255,255,255,.06)}
+  .cycle-goal-name{font-size:12px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .question-result{display:flex;align-items:center;justify-content:flex-end;gap:12px;min-width:260px}
+  .question-result span{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-family:var(--mono);font-size:12px;font-weight:900;color:var(--text2)}
+  .question-result small{font-family:var(--sans);font-size:9px;text-transform:uppercase;letter-spacing:.45px;color:var(--text3);font-weight:800}
+  .materia-share-overlay{position:fixed;inset:0;background:rgba(0,0,0,.74);backdrop-filter:blur(8px);z-index:120000;display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}
+  .materia-share-modal{width:min(470px,100%);max-height:94vh;display:flex;flex-direction:column;gap:12px;align-items:center;overflow:auto;padding:2px 0}
+  .materia-share-card{width:min(430px,100%);min-height:744px;background:radial-gradient(circle at 20% -10%,rgba(79,142,247,.20),transparent 34%),linear-gradient(180deg,#151924 0%,#0d0f14 100%);border:1px solid rgba(255,255,255,.10);border-radius:26px;padding:26px 24px 24px;box-shadow:0 28px 90px rgba(0,0,0,.58);position:relative;overflow:hidden;color:#f1f4fb}
+  .materia-share-card::before{content:'';position:absolute;left:0;right:0;top:0;height:5px;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--green))}
+  .materia-share-brand{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:22px;position:relative;z-index:1}
+  .materia-share-brand img{height:34px;max-width:168px;object-fit:contain}
+  .materia-share-kicker{font-size:10px;font-weight:900;letter-spacing:1.8px;text-transform:uppercase;color:var(--text3);text-align:right}
+  .materia-share-title{font-size:24px;font-weight:900;line-height:1.08;letter-spacing:0;margin-bottom:6px;position:relative;z-index:1}
+  .materia-share-sub{font-size:12px;color:var(--text3);line-height:1.45;margin-bottom:18px;position:relative;z-index:1}
+  .materia-share-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;position:relative;z-index:1}
+  .materia-share-stat{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:11px 12px;min-width:0}
+  .materia-share-stat-value{font-family:var(--mono);font-size:18px;font-weight:900;color:#fff;line-height:1.05}
+  .materia-share-stat-label{font-size:9px;font-weight:900;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-top:5px}
+  .materia-share-belt{display:flex;align-items:center;gap:9px;min-height:30px}
+  .materia-share-belt img{width:30px;height:30px;object-fit:contain;flex:0 0 30px}
+  .materia-share-belt img.faixa-preta-icon{filter:drop-shadow(0 0 1px rgba(255,255,255,.98)) drop-shadow(0 0 6px rgba(255,255,255,.78))}
+  .materia-share-chart{height:192px;margin:4px auto 18px;position:relative;z-index:1}
+  .materia-share-list{display:flex;flex-direction:column;gap:0;position:relative;z-index:1}
+  .materia-share-row{display:grid;grid-template-columns:12px minmax(0,1fr) auto auto;gap:7px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+  .materia-share-dot{width:10px;height:10px;border-radius:3px}
+  .materia-share-name{font-size:11px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .materia-share-meta{font-size:8.5px;font-weight:800;color:var(--text3);margin-top:2px;line-height:1.2;letter-spacing:.1px}
+  .materia-share-time{font-family:var(--mono);font-size:11px;font-weight:800;color:#b8c3ec;text-align:right}
+  .materia-share-pct{font-family:var(--mono);font-size:11px;font-weight:900;text-align:right;width:34px}
+  .materia-share-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;width:100%}
+  .materia-share-actions button{height:38px;border-radius:10px;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);font-family:var(--sans);font-size:12px;font-weight:900;padding:0 14px;cursor:pointer}
+  .materia-share-actions button.primary{border:0;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+  .materia-share-actions button:hover{transform:translateY(-1px);border-color:rgba(79,142,247,.45)}
+  .materia-share-empty{padding:28px 14px;text-align:center;border:1px dashed rgba(255,255,255,.14);border-radius:16px;color:var(--text3);font-size:12px;line-height:1.45}
+  .today-vertical-card{min-height:0}
+  .today-vertical-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px;position:relative;z-index:1}
+  .today-vertical-metric{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:13px 14px;min-height:72px;display:flex;flex-direction:column;justify-content:center}
+  .today-vertical-metric.wide{grid-column:1/-1}
+  .today-vertical-study-block{margin-top:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.075);border-radius:16px;padding:13px 14px;position:relative;z-index:1}
+  .today-vertical-study-title{font-size:10px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+  .today-vertical-study-layout{display:grid;grid-template-columns:112px minmax(0,1fr);gap:13px;align-items:center}
+  .today-vertical-chart{width:112px;height:112px;position:relative}
+  .today-vertical-study-list{display:flex;flex-direction:column;gap:0;min-width:0}
+  .today-vertical-study-row{display:grid;grid-template-columns:10px minmax(0,1fr) auto auto;gap:6px;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+  .today-vertical-study-row:last-child{border-bottom:0}
+  .today-vertical-study-dot{width:9px;height:9px;border-radius:3px}
+  .today-vertical-study-name{font-size:10px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .today-vertical-study-time{font-family:var(--mono);font-size:10px;font-weight:900;color:#b8c3ec}
+  .today-vertical-study-pct{font-family:var(--mono);font-size:10px;font-weight:900;text-align:right;width:30px}
+  @keyframes todayFlash{
+    0%{box-shadow:0 0 0 0 rgba(255,255,255,0)}
+    35%{box-shadow:0 0 0 999px rgba(255,255,255,0.08)}
+    100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}
+  }
+  @media (max-width: 1480px){
+    .today-summary-grid{grid-template-columns:1fr}
+    .today-chart-wrap{height:126px}
+    .today-sessions-list{max-height:none}
+  }
+  @media (max-width: 1320px),(max-height: 760px){
+    .main{padding:24px 20px}
+    .page-header{margin-bottom:22px}
+    .page-title{font-size:22px}
+    .metrics-stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;margin-bottom:18px!important}
+    .metrics-main-grid,.metrics-secondary-grid{grid-template-columns:minmax(0,1fr)!important;gap:16px!important;margin-bottom:18px!important}
+    .metrics-panel{padding:16px!important}
+    #analiseMateriasResumo{grid-template-columns:minmax(0,1fr)!important}
+    .metrics-pizza-layout{align-items:flex-start!important;gap:16px!important}
+    #pizzaLegend{max-height:260px!important}
+  }
+  @media (max-width: 900px){
+    .metrics-stats-grid{grid-template-columns:minmax(0,1fr)!important}
+    .metrics-pizza-layout{flex-direction:column!important}
+    .day-detail-overlay{padding:12px}
+    .day-detail-stats,.day-detail-grid{grid-template-columns:1fr}
+    .day-detail-materia-row{grid-template-columns:minmax(0,1fr);gap:6px}
+    .day-detail-chart-layout,.cycle-goal-grid,.cycle-goal-row{grid-template-columns:1fr}
+    .question-result{min-width:0;justify-content:flex-start;flex-wrap:wrap}
+  }
+  /* Esconder botões nativos de scroll numérico */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; appearance: none; }
+  input[type="number"] { -moz-appearance:textfield; appearance: textfield; }
+</style>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <img src="assets/Track Concursos logo.png" alt="Track Concursos" class="brand-logo" onclick="location.href='concursos.html'">
+  </div>
+  <nav class="nav">
+    <div class="nav-label">Menu</div>
+    <div class="nav-item" onclick="location.href='concursos.html'" style="cursor:pointer"><span class="icon"><img src="assets/michel-m-icon.png" alt="" style="width:18px;height:18px;object-fit:contain;display:block"></span> Meus Concursos</div>
+    <div class="nav-item" onclick="location.href='dashboard.html'" style="cursor:pointer"><span class="icon tc-nav-icon" data-nav-icon="dashboard" aria-hidden="true"></span> Dashboard</div>
+    <div class="nav-item" id="navCronogramaInteligente" onclick="location.href='cronograma_inteligente.html'" style="cursor:pointer"><span class="icon tc-nav-icon" data-nav-icon="cronograma" aria-hidden="true"></span> Cronograma Inteligente</div>
+    <div class="nav-item" onclick="location.href='revisoes.html'" style="cursor:pointer"><span class="icon tc-nav-icon" data-nav-icon="revisoes" aria-hidden="true"></span> Revisões <span class="nav-badge" id="revBadge" style="display:none">0</span></div>
+    <div class="nav-item" id="navFlashcardsDashboard" onclick="sessionStorage.setItem('ct_dashboard_tab','flashcards');location.href='dashboard.html#flashcards'" style="cursor:pointer"><span class="icon tc-nav-icon" data-nav-icon="flashcards" aria-hidden="true"></span> Flashcards <span class="nav-badge" id="flashTabBadge" style="display:none">0</span></div>
+    <div class="nav-item active" onclick="location.href='historico.html'" style="cursor:pointer"><span class="icon tc-nav-icon" data-nav-icon="historico" aria-hidden="true"></span> Métricas</div>
+    <div class="nav-item" onclick="location.href='simulados.html'" style="cursor:pointer"><span class="icon tc-nav-icon" data-nav-icon="simulados" aria-hidden="true"></span> Simulados</div>
+    <div class="nav-item" onclick="location.href='ajuda.html'" style="cursor:pointer"><span class="icon tc-nav-icon" data-nav-icon="ajuda" aria-hidden="true"></span> Ajuda</div>
+  </nav>
+  <div style="margin:0 12px 8px;text-align:center">
+        <a href="ajuda.html" style="text-decoration:none">
+          <div style="font-size:12px;color:var(--text3);line-height:1.6">
+      <span style="color:var(--accent2);font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap">Desenvolvido por <img src="assets/logoMichelSoftwares.png?v=1" alt="Michel Softwares" style="height:36px;width:auto;max-width:240px;vertical-align:middle"></span><br>
+            <span style="opacity:0.7">powered by Antigravity Gemini</span>
+          </div>
+        </a>
+      </div>
+      <div class="sidebar-concurso">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div id="sideLogoImg" style="width:32px;height:32px;border-radius:6px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📋</div>
+      <div style="min-width:0">
+        <div class="concurso-nome" id="sideNome">—</div>
+        <div class="concurso-banca" id="sideBanca">—</div>
+      </div>
+    </div>
+    <div class="timer-box">
+      <div class="timer-num" id="sideTimer">—</div>
+      <div class="timer-label" id="sideTimerLabel">dias para a prova</div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+      <div class="page-title"><span class="tc-heading-icon tc-nav-icon" data-nav-icon="historico" aria-hidden="true"></span>Métricas</div>
+      <div class="page-sub" id="histSub">Carregando...</div>
+    </div>
+    <div class="header-controls">
+      <div class="filtro-chip" onclick="setJanela(7,this)">7 dias</div>
+      <div class="filtro-chip" onclick="setJanela(14,this)">14 dias</div>
+      <div class="filtro-chip" onclick="setJanela(30,this)">30 dias</div>
+      <div class="filtro-chip active" onclick="setJanela(0,this)">Desde o início</div>
+    </div>
+  </div>
+
+  <!-- STATS GLOBAIS -->
+  <div class="metrics-stats-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px" id="statsGlobais"></div>
+
+  <!-- GRÁFICOS -->
+  <div class="metrics-main-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px">
+    <!-- Horas por dia -->
+    <div class="metrics-panel" style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px">
+      <div class="metrics-panel-title"><span class="metrics-panel-icon" data-metrics-icon="timer" aria-hidden="true"></span>Horas estudadas</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:16px" id="lblHoras"></div>
+      <div id="chartHoras"></div>
+    </div>
+    <!-- Análise por matéria -->
+    <div class="metrics-panel" style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px">
+      <div class="metrics-panel-title"><span class="metrics-panel-icon" data-metrics-icon="stacked-chart" aria-hidden="true"></span>Análise por matéria</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:16px" id="lblQuestoes"></div>
+      <canvas id="chartQuestoes" height="140"></canvas>
+      <div id="analiseMateriasResumo" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px"></div>
+    </div>
+  </div>
+
+  <!-- RANKING DE MATÉRIAS + ESTUDOS DO DIA -->
+  <div class="metrics-secondary-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+    <!-- Distribuição por Matéria (Pizza) -->
+    <div id="pizzaShareCard" class="metrics-panel shareable-chart-card" role="button" tabindex="0" onclick="abrirPopupDistribuicaoMateria()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();abrirPopupDistribuicaoMateria();}" title="Abrir versão vertical para print" style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px">
+        <div class="metrics-panel-title" style="margin-bottom:0"><span class="metrics-panel-icon" data-metrics-icon="pie-chart" aria-hidden="true"></span>Distribuição por Matéria</div>
+        <div class="metrics-print-label">PRINT <span class="metrics-inline-icon" data-metrics-icon="camera-3" aria-hidden="true"></span></div>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:16px" id="lblPizza">Tempo estudado</div>
+      <div class="metrics-pizza-layout" style="display:flex;align-items:center;gap:20px">
+        <div style="flex-shrink:0;width:200px;height:200px"><canvas id="chartPizza"></canvas></div>
+        <div id="pizzaLegend" style="flex:1;max-height:210px;overflow-y:auto"></div>
+      </div>
+    </div>
+
+    <!-- Estudos do dia -->
+    <div class="today-summary-card shareable-chart-card" id="todayShareCard" role="button" tabindex="0" onclick="abrirPopupEstudosDia()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();abrirPopupEstudosDia();}" title="Abrir versão vertical para print">
+      <div class="today-brand left"><img src="assets/Track Concursos logo.png" alt="Track Concursos"></div>
+      <div class="today-brand right"><img src="assets/logoMichelSoftwares.png" alt="Michel Softwares"></div>
+      <div class="today-summary-header">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--text)">Estudos do dia</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:4px" id="todaySummarySub">Resumo do dia atual</div>
+        </div>
+        <button id="todayShareBtn" class="today-share-btn" type="button" title="Abrir versão vertical para print">PRINT <span class="metrics-inline-icon" data-metrics-icon="camera-3" aria-hidden="true"></span></button>
+      </div>
+      <div class="today-summary-grid">
+        <div class="today-panel">
+          <div class="today-panel-title">Horas estudadas hoje</div>
+          <div class="today-panel-sub" id="todayHoursSub">Distribuição por matéria no dia atual</div>
+          <div class="today-chart-wrap"><canvas id="chartTodayHours"></canvas></div>
+          <div class="today-legend" id="todayHoursLegend"></div>
+        </div>
+        <div class="today-panel">
+          <div class="today-panel-title">Questões feitas hoje</div>
+          <div class="today-panel-sub" id="todayQuestionsSub">Acertos e erros no dia atual</div>
+          <div class="today-chart-wrap"><canvas id="chartTodayQuestions"></canvas></div>
+          <div class="today-legend" id="todayQuestionsLegend"></div>
+        </div>
+        <div class="today-sessions-panel">
+          <div class="today-panel-title">Sessões de estudo de hoje</div>
+          <div class="today-panel-sub" id="todaySessionsSub"></div>
+          <div id="todaySessionsList" class="today-sessions-list"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<script src="data.js"></script>
+<script>
+// â”€â”€ SIDEBAR CONCURSO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+(function() {
+  const cId = sessionStorage.getItem('ct_concurso_ativo');
+  if (!cId) return;
+  const c = CT.getConcurso(cId);
+  if (!c) return;
+  const nomeEl  = document.getElementById('sideNome');
+  const bancaEl = document.getElementById('sideBanca');
+  const timerEl = document.getElementById('sideTimer');
+  const timerLb = document.getElementById('sideTimerLabel');
+  const logoEl  = document.getElementById('sideLogoImg');
+  if (nomeEl)  nomeEl.textContent  = c.nome;
+  if (bancaEl) bancaEl.textContent = c.banca || '—';
+  if (logoEl) {
+    let logoHtml = '';
+    if (c.logoPath) logoHtml = `<img src="${c.logoPath}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover;border-radius:5px">`;
+    else if (c.logoBase64) logoHtml = `<img src="${c.logoBase64}" style="width:100%;height:100%;object-fit:cover;border-radius:5px">`;
+    else if (c.logoEmoji) logoHtml = c.logoEmoji;
+    logoEl.innerHTML = logoHtml;
+  }
+  if (c.preEdital) {
+    if (timerEl) {
+      const box = timerEl.parentElement;
+      box.style.padding = '12px 12px 10px';
+      box.innerHTML = '<div style="display:flex; flex-direction:column; align-items:center; gap:6px">'
+          + '<div style="font-size:12px; font-weight:700; color:var(--accent2); text-transform:uppercase; letter-spacing:1.5px">✦ PRÉ-EDITAL</div>'
+          + '<div style="display:flex; align-items:center; justify-content:center; gap:8px; font-size:16px; font-weight:600; color:var(--text3)">'+(CT.renderCoverageRocket ? CT.renderCoverageRocket(c, 30, 'vertical-align:0;') : '🚀')+' <span style="color:var(--text)">coberto</span> <span style="color:var(--accent2); font-weight:800">×'+(c.coberto||0)+'</span></div>'
+          + '</div>';
+    }
+  } else {
+    const dias = CT.diasRestantes(c);
+    if (timerEl) {
+      const box = timerEl.parentElement;
+      box.style.padding = '8px 10px';
+      var cobHtml = (c.coberto > 0)
+        ? '<div style="margin-top:5px; border-top:1px solid var(--border); padding-top:5px; display:flex; flex-direction:column; align-items:center;">'
+          + '<div style="font-size:10px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.5px">✦ Pós-Edital</div>'
+          + '<div style="font-size:11px; font-weight:600; color:var(--text3)">'+(CT.renderCoverageRocket ? CT.renderCoverageRocket(c, 18) : '🚀')+' Coberto <span style="color:var(--accent2)">×'+c.coberto+'</span></div>'
+          + '</div>'
+        : '';
+      box.innerHTML = '<div class="timer-num" id="sideTimer">'+(dias!=null?dias:'—')+'</div><div class="timer-label" id="sideTimerLabel">dias para a prova</div>' + cobHtml;
+      document.getElementById('sideTimer').style.color = dias==null?'var(--accent)':dias<=7?'var(--red)':dias<=30?'var(--orange)':'var(--accent)';
+    }
+  }
+  // Rev badge
+  const rev = CT.classificarRevisoes ? CT.classificarRevisoes() : null;
+  if (rev) {
+    const urgentes = [...(rev.atrasadas||[]),...(rev.hoje||[])].filter(r=>{const ctx=CT.getContextoRevisao(r);return ctx.concursoId===cId;}).length;
+    const b = document.getElementById('revBadge');
+    if (b) { b.textContent=urgentes; b.style.display=urgentes>0?'':'none'; }
+  }
+})();
+</script>
+<script>
+const cId = sessionStorage.getItem('ct_concurso_ativo');
+if (!cId) location.href = 'concursos.html';
+
+let _janela = 0;
+let _chartHoras = null, _chartQuestoes = null, _chartPizza = null, _chartPizzaShare = null, _chartTodayHours = null, _chartTodayQuestions = null, _chartTodayVerticalHours = null;
+let _chartDayHours = null, _chartDayQuestions = null;
+let _pizzaShareState = null;
+let _todayShareState = null;
+
+const PIZZA_COLORS = [
+  '#4f8ef7','#7c5cfc','#3ecf8e','#f5874a','#f55a5a',
+  '#FFD700','#e056a0','#56c4e0','#a78bfa','#f97316',
+  '#06b6d4','#8b5cf6','#ec4899','#14b8a6','#f43f5e',
+  '#6366f1','#22c55e','#eab308','#ef4444','#0ea5e9'
+];
+
+function themePalette() {
+  return window.TrackTheme ? TrackTheme.palette() : {
+    accent: '#4f8ef7',
+    accent2: '#7c5cfc',
+    green: '#3ecf8e',
+    yellow: '#FFD700',
+    orange: '#f5874a',
+    red: '#f55a5a',
+    text: '#e8eaf2',
+    text3: '#a1a6c2',
+    chartGrid: 'rgba(255,255,255,0.04)',
+    chartAxis: '#555a72',
+    chartAxisStrong: '#c8cde2',
+    tooltipBg: '#1a1e2a',
+    tooltipBorder: 'rgba(255,255,255,0.08)',
+    tooltipTitle: '#e8eaf2',
+    tooltipBody: '#a1a6c2',
+    chartSurfaceBorder: '#0d0f14',
+    heatOut: 'rgba(255,255,255,0.02)',
+    heatEmpty: 'rgba(255,255,255,0.035)',
+    heat1: '#17382b',
+    heat2: '#1f5f46',
+    heat3: '#268b61',
+    heat4: '#2fbd7b',
+    heat5: '#3ecf8e'
+  };
+}
+
+function getPizzaColors() {
+  const theme = themePalette();
+  return [
+    theme.accent, theme.accent2, theme.green, theme.orange, theme.red,
+    theme.yellow, '#e056a0', '#56c4e0', '#a78bfa', '#f97316',
+    '#06b6d4', '#8b5cf6', '#ec4899', '#14b8a6', '#f43f5e',
+    '#6366f1', '#22c55e', '#eab308', '#ef4444', '#0ea5e9'
+  ];
+}
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[ch]));
+}
+function buildLegendRows(items, formatter, emptyText) {
+  if (!items.length) return `<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px 0">${emptyText}</div>`;
+  return items.map(item => `
+    <div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border)">
+      <div style="width:10px;height:10px;border-radius:3px;flex-shrink:0;background:${item.color}"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.label}</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--text2);flex-shrink:0">${formatter(item)}</div>
+      <div style="font-family:var(--mono);font-size:11px;font-weight:700;color:${item.color};flex-shrink:0;width:38px;text-align:right">${item.pct}%</div>
+    </div>
+  `).join('');
+}
+function makeDoughnutChart(target, currentChart, items, theme, tooltipFormatter) {
+  const ctx = document.getElementById(target).getContext('2d');
+  if (currentChart) currentChart.destroy();
+  if (!items.length) {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    return null;
+  }
+  return new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: items.map(item => item.label),
+      datasets: [{
+        data: items.map(item => item.value),
+        backgroundColor: items.map(item => item.color),
+        borderColor: theme.chartSurfaceBorder,
+        borderWidth: 2,
+        hoverOffset: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '55%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: theme.tooltipBg,
+          borderColor: theme.tooltipBorder,
+          borderWidth: 1,
+          titleColor: theme.tooltipTitle,
+          bodyColor: theme.tooltipBody,
+          padding: 10,
+          cornerRadius: 8,
+          callbacks: {
+            label: function(ctx) {
+              return tooltipFormatter(items[ctx.dataIndex]);
+            }
+          }
+        }
+      }
+    }
+  });
+}
+function formatSignedStudyTime(seconds) {
+  const abs = Math.abs(Math.round(seconds || 0));
+  return (seconds >= 0 ? '+' : '-') + formatStudyTime(abs);
+}
+function daysBetweenInclusive(startKey, endKey) {
+  const start = new Date(startKey + 'T00:00:00');
+  const end = new Date(endKey + 'T00:00:00');
+  return Math.max(1, Math.round((end - start) / 86400000) + 1);
+}
+function readCycleGoalComparison(info) {
+  let raw = null;
+  try { raw = JSON.parse(localStorage.getItem('ct_ciclo_' + (cId || '')) || '{}'); } catch (e) { raw = null; }
+  const entries = raw && Array.isArray(raw.entries) ? raw.entries : [];
+  const activeEntries = entries.filter(entry => (parseInt(entry.targetSeconds, 10) || 0) > 0);
+  const weeklyTarget = activeEntries.reduce((acc, entry) => acc + (parseInt(entry.targetSeconds, 10) || 0), 0);
+  if (!weeklyTarget) return null;
+
+  const periodDays = daysBetweenInclusive(info.startKey, info.endKey);
+  const weekFactor = periodDays / 7;
+  const expectedTotal = Math.round(weeklyTarget * weekFactor);
+  const studiedTotal = info.totalSeg || 0;
+  const balance = studiedTotal - expectedTotal;
+  const byMateria = new Map(info.materiasDia.map(m => [m.id, m]));
+  const targetByMateria = new Map();
+  activeEntries.forEach(entry => {
+    if (!entry.materiaId) return;
+    targetByMateria.set(entry.materiaId, (targetByMateria.get(entry.materiaId) || 0) + Math.round((parseInt(entry.targetSeconds, 10) || 0) * weekFactor));
+  });
+  const materias = CT.getMaterias(cId);
+  const materiaMap = new Map(materias.map(m => [m.id, m]));
+  const rows = [...new Set([...targetByMateria.keys(), ...byMateria.keys()])].map(id => {
+    const target = targetByMateria.get(id) || 0;
+    const studied = byMateria.get(id)?.seg || 0;
+    return {
+      id,
+      nome: materiaMap.get(id)?.nome || byMateria.get(id)?.nome || 'Matéria',
+      target,
+      studied,
+      balance: studied - target
+    };
+  }).filter(row => row.target > 0 || row.studied > 0)
+    .sort((a,b) => Math.abs(b.balance) - Math.abs(a.balance));
+  return { weeklyTarget, periodDays, weekFactor, expectedTotal, studiedTotal, balance, rows };
+}
+function buildChartLegend(items, formatter, emptyText) {
+  if (!items.length) return `<div class="day-detail-empty">${emptyText}</div>`;
+  return items.map(item => `
+    <div class="day-detail-legend-row">
+      <div class="day-detail-legend-dot" style="background:${item.color}"></div>
+      <div class="day-detail-legend-name">${escapeHtml(item.label)}</div>
+      <div class="day-detail-legend-meta">${formatter(item)}</div>
+    </div>
+  `).join('');
+}
+function buildCycleGoalPanel(info) {
+  const comparison = readCycleGoalComparison(info);
+  if (!comparison) return '';
+  const reached = comparison.balance >= 0;
+  const pct = comparison.expectedTotal > 0 ? Math.round((comparison.studiedTotal / comparison.expectedTotal) * 100) : 0;
+  const badgeColor = reached ? 'var(--green)' : 'var(--yellow)';
+  const message = reached
+    ? 'Meta batida. Excelente consistência: você entregou a carga prevista para este período.'
+    : 'Você estudou, e isso conta. Abaixo dá para ver onde faltou carga em relação ao ciclo planejado.';
+  const rows = comparison.rows.length ? comparison.rows.map(row => {
+    const color = row.balance >= 0 ? 'var(--green)' : 'var(--yellow)';
+    return `
+      <div class="cycle-goal-row">
+        <div class="cycle-goal-name">${escapeHtml(row.nome)}</div>
+        <div style="font-family:var(--mono);font-size:12px;font-weight:900;color:var(--text2);text-align:right">${formatStudyTime(row.studied)}</div>
+        <div style="font-family:var(--mono);font-size:12px;font-weight:900;color:var(--text3);text-align:right">${formatStudyTime(row.target)}</div>
+        <div style="font-family:var(--mono);font-size:12px;font-weight:900;color:${color};text-align:right">${formatSignedStudyTime(row.balance)}</div>
+      </div>`;
+  }).join('') : '<div class="day-detail-empty">Nenhuma matéria do ciclo apareceu neste período.</div>';
+
+  return `
+    <div class="cycle-goal-panel">
+      <div class="cycle-goal-head">
+        <div>
+          <div class="cycle-goal-title">Meta do ciclo x tempo estudado</div>
+          <div class="cycle-goal-sub">${message}</div>
+        </div>
+        <div class="cycle-goal-badge" style="color:${badgeColor}">${pct}% da meta</div>
+      </div>
+      <div class="cycle-goal-grid">
+        <div class="cycle-goal-stat"><div class="cycle-goal-value">${formatStudyTime(comparison.studiedTotal)}</div><div class="cycle-goal-label">Estudado</div></div>
+        <div class="cycle-goal-stat"><div class="cycle-goal-value">${formatStudyTime(comparison.expectedTotal)}</div><div class="cycle-goal-label">Previsto pelo ciclo</div></div>
+        <div class="cycle-goal-stat"><div class="cycle-goal-value" style="color:${badgeColor}">${formatSignedStudyTime(comparison.balance)}</div><div class="cycle-goal-label">Saldo</div></div>
+      </div>
+      <div class="cycle-goal-row" style="border-top:0;padding-top:0;color:var(--text3);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.45px">
+        <div>Matéria</div><div style="text-align:right">Estudado</div><div style="text-align:right">Meta</div><div style="text-align:right">Saldo</div>
+      </div>
+      <div class="cycle-goal-matters">${rows}</div>
+    </div>`;
+}
+function closeDayDetail() {
+  document.getElementById('dayDetailOverlay')?.remove();
+  if (_chartDayHours) { _chartDayHours.destroy(); _chartDayHours = null; }
+  if (_chartDayQuestions) { _chartDayQuestions.destroy(); _chartDayQuestions = null; }
+}
+function buildDayActivity(startKey, endKey = startKey) {
+  const materias = CT.getMaterias(cId);
+  const materiaMap = new Map(materias.map(m => [m.id, m]));
+  const topicoMap = new Map(CT.getTopicos().map(t => [t.id, t]));
+  const subtopicoMap = new Map(CT.getSubtopicos().map(s => [s.id, s]));
+  const inRange = item => item.data >= startKey && item.data <= endKey;
+  const compareActivity = (a,b) =>
+    String(a.data || '').localeCompare(String(b.data || '')) ||
+    String(a.horaInicio || '').localeCompare(String(b.horaInicio || ''));
+  const sessoes = CT.getSessoes({ concursoId: cId })
+    .filter(inRange)
+    .sort(compareActivity);
+  const questoes = CT.getQuestoes({ concursoId: cId })
+    .filter(inRange)
+    .sort(compareActivity);
+  const totalSeg = CT.totalSegundos(sessoes);
+  const stats = CT.calcStats(questoes);
+  const metricasTotais = CT.somarMetricasSessoes ? CT.somarMetricasSessoes(sessoes) : { paginasPdf: 0, videoMinutos: 0 };
+  const metricasItems = CT.formatarMetricasSessao ? CT.formatarMetricasSessao({ metricas: metricasTotais }) : [];
+  const temEstudoRegistrado = s => (s.duracaoSegundos || 0) > 0 || (CT.formatarMetricasSessao && CT.formatarMetricasSessao(s).length > 0);
+  const diasComEstudo = new Set(sessoes.filter(temEstudoRegistrado).map(s => s.data)).size;
+  const diasComAtividade = new Set([...sessoes.map(s => s.data), ...questoes.map(q => q.data)]).size;
+  const colors = getPizzaColors();
+  const theme = themePalette();
+
+  const materiasDia = materias.map((m, i) => {
+    const sessoesMateria = sessoes.filter(s => s.materiaId === m.id);
+    const questoesMateria = questoes.filter(q => q.materiaId === m.id);
+    const seg = CT.totalSegundos(sessoesMateria);
+    const qStats = CT.calcStats(questoesMateria);
+    const metricas = CT.somarMetricasSessoes ? CT.somarMetricasSessoes(sessoesMateria) : { paginasPdf: 0, videoMinutos: 0 };
+    const metricasResumo = CT.formatarResumoMetricasSessao ? CT.formatarResumoMetricasSessao({ metricas }) : '';
+    return {
+      id: m.id,
+      nome: m.nome,
+      seg,
+      metricas,
+      metricasResumo,
+      sessoes: sessoesMateria.length,
+      resolvidas: qStats.resolvidas || 0,
+      acertos: qStats.acertos || 0,
+      erros: qStats.erros || 0,
+      pct: qStats.pct,
+      color: colors[i % colors.length]
+    };
+  }).filter(m => m.seg > 0 || m.resolvidas > 0 || m.metricasResumo);
+
+  const maxSeg = Math.max(...materiasDia.map(m => m.seg), 0);
+  const maxQuestoes = Math.max(...materiasDia.map(m => m.resolvidas), 0);
+  const horasItems = materiasDia
+    .filter(m => m.seg > 0)
+    .map(m => ({
+      label: m.nome,
+      value: m.seg,
+      color: m.color,
+      pct: totalSeg > 0 ? Math.round((m.seg / totalSeg) * 100) : 0
+    }));
+  const questoesItems = [
+    { label: 'Certas', value: stats.acertos || 0, color: theme.green, pct: stats.resolvidas > 0 ? Math.round(((stats.acertos || 0) / stats.resolvidas) * 100) : 0 },
+    { label: 'Erradas', value: stats.erros || 0, color: theme.red, pct: stats.resolvidas > 0 ? Math.round(((stats.erros || 0) / stats.resolvidas) * 100) : 0 }
+  ].filter(item => item.value > 0);
+
+  function itemLabel(item) {
+    const mat = item.materiaId ? materiaMap.get(item.materiaId) : null;
+    const topico = item.topicoId ? topicoMap.get(item.topicoId) : null;
+    const subtopicoId = item.subtopId || item.subtopicoId;
+    const sub = subtopicoId ? subtopicoMap.get(subtopicoId) : null;
+    return {
+      materia: mat ? mat.nome : 'Sessão livre',
+      detalhe: [topico?.nome, sub?.nome].filter(Boolean).join(' > ')
+    };
+  }
+
+  return { startKey, endKey, sessoes, questoes, totalSeg, stats, metricasTotais, metricasItems, diasComEstudo, diasComAtividade, materiasDia, maxSeg, maxQuestoes, horasItems, questoesItems, itemLabel, theme };
+}
+function openDayDetail(dateKey, options = {}) {
+  closeDayDetail();
+  const startKey = options.startKey || dateKey;
+  const endKey = options.endKey || dateKey;
+  const info = buildDayActivity(startKey, endKey);
+  const titleText = options.title || `Atividades de ${formatHeatmapDate(dateKey)}`;
+  const scopeText = options.scopeText || 'neste dia';
+  const emptyLabel = options.emptyLabel || 'nesse dia';
+  const periodLabel = options.periodLabel || 'no dia';
+  const questionsTitle = options.questionsTitle || 'Questões do dia';
+  const showCycleGoal = options.showCycleGoal === true;
+  const totalAtividades = info.sessoes.length + info.questoes.length;
+  const overlay = document.createElement('div');
+  overlay.className = 'day-detail-overlay';
+  overlay.id = 'dayDetailOverlay';
+  overlay.onclick = e => { if (e.target === overlay) closeDayDetail(); };
+
+  const materiaRows = info.materiasDia.length ? info.materiasDia.map(m => {
+    const horaPct = info.maxSeg > 0 ? Math.max(4, Math.round((m.seg / info.maxSeg) * 100)) : 0;
+    const questPct = info.maxQuestoes > 0 ? Math.max(4, Math.round((m.resolvidas / info.maxQuestoes) * 100)) : 0;
+    return `
+      <div class="day-detail-materia-row">
+        <div style="min-width:0">
+          <div class="day-detail-materia-name">${escapeHtml(m.nome)}</div>
+          <div class="day-detail-materia-meta">${[`${m.sessoes} sessões de estudo`, `${m.acertos} acertos`, `${m.resolvidas} questões`, m.pct != null ? m.pct + '% de acerto' : 'sem questões', m.metricasResumo].filter(Boolean).map(escapeHtml).join(' | ')}</div>
+          <div class="day-detail-bar-label"><span>Tempo estudado</span><span>${formatStudyTime(m.seg)}</span></div>
+          <div class="day-detail-bar"><div class="day-detail-bar-fill" style="width:${horaPct}%;background:${m.color}"></div></div>
+          ${m.resolvidas > 0 ? `<div class="day-detail-bar-label"><span>Questões feitas</span><span>${m.resolvidas}</span></div>` : ''}
+          ${m.resolvidas > 0 ? `<div class="day-detail-bar"><div class="day-detail-bar-fill" style="width:${questPct}%;background:${info.theme.yellow}"></div></div>` : ''}
+        </div>
+        <div style="font-family:var(--mono);font-size:12px;font-weight:800;color:var(--text2);text-align:right">${formatStudyTime(m.seg)}</div>
+        <div style="font-family:var(--mono);font-size:12px;font-weight:800;color:${pctColor(m.pct)};text-align:right">${m.pct != null ? m.pct + '%' : '-'}</div>
+      </div>`;
+  }).join('') : `<div class="day-detail-empty">Nenhuma matéria estudada ${emptyLabel}.</div>`;
+
+  const sessaoRows = info.sessoes.length ? info.sessoes.map(s => {
+    const labels = info.itemLabel(s);
+    const hora = s.horaInicio ? new Date(s.horaInicio).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : '--:--';
+    const tipo = formatStudyTypeLabel(s);
+    const metricas = CT.formatarResumoMetricasSessao ? CT.formatarResumoMetricasSessao(s) : '';
+    return `
+      <div class="today-session-item">
+        <div class="today-session-hour">${hora}</div>
+        <div style="min-width:0">
+          <div class="today-session-name">${escapeHtml(labels.materia)}</div>
+          <div class="today-session-meta">${escapeHtml([labels.detalhe, tipo, metricas].filter(Boolean).join(' | '))}</div>
+        </div>
+        <div class="today-session-duration">${formatStudyTime(s.duracaoSegundos)}</div>
+      </div>`;
+  }).join('') : `<div class="day-detail-empty">Nenhuma sessão de estudo registrada ${emptyLabel}.</div>`;
+
+  const questaoRows = info.questoes.length ? info.questoes.map(q => {
+    const labels = info.itemLabel(q);
+    const hora = q.horaInicio ? new Date(q.horaInicio).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : '--:--';
+    const pct = q.resolvidas > 0 ? Math.round(((q.acertos || 0) / q.resolvidas) * 100) : null;
+    const pctText = pct != null ? pct + '%' : '-';
+    return `
+      <div class="today-session-item">
+        <div class="today-session-hour">${hora}</div>
+        <div style="min-width:0">
+          <div class="today-session-name">${escapeHtml(labels.materia)}</div>
+          <div class="today-session-meta">${escapeHtml(labels.detalhe || 'Lançamento de questões')}</div>
+        </div>
+        <div class="question-result">
+          <span style="color:var(--green)">${q.acertos || 0}<small>acertos</small></span>
+          <span>${q.resolvidas || 0}<small>questões</small></span>
+          <span style="color:${pctColor(pct)}">${pctText}<small>acerto</small></span>
+        </div>
+      </div>`;
+  }).join('') : `<div class="day-detail-empty">Nenhuma questão registrada ${emptyLabel}.</div>`;
+  const cycleGoalPanel = showCycleGoal ? buildCycleGoalPanel(info) : '';
+  const metricasExtrasPanel = info.metricasItems && info.metricasItems.length ? `
+      <div class="day-detail-stats" style="margin-top:-4px">
+        ${info.metricasItems.map(item => {
+          const parts = String(item.label || '').split(' ');
+          const value = parts.shift() || '';
+          const label = parts.join(' ');
+          return `<div class="day-detail-stat"><div class="day-detail-stat-value">${escapeHtml(value)}</div><div class="day-detail-stat-label">${escapeHtml(label)}</div></div>`;
+        }).join('')}
+      </div>` : '';
+
+  overlay.innerHTML = `
+    <div class="day-detail-modal" onclick="event.stopPropagation()">
+      <div class="day-detail-head">
+        <div>
+          <div class="day-detail-title">${titleText}</div>
+          <div class="day-detail-sub">${totalAtividades ? totalAtividades + ' registros encontrados ' + scopeText : 'Nenhuma atividade registrada ' + scopeText}</div>
+        </div>
+        <button class="day-detail-close" onclick="closeDayDetail()" title="Fechar">x</button>
+      </div>
+      <div class="day-detail-stats">
+        <div class="day-detail-stat"><div class="day-detail-stat-value">${formatStudyTime(info.totalSeg)}</div><div class="day-detail-stat-label">Horas estudadas</div></div>
+        <div class="day-detail-stat"><div class="day-detail-stat-value">${info.stats.resolvidas || 0}</div><div class="day-detail-stat-label">Questões feitas</div></div>
+        <div class="day-detail-stat"><div class="day-detail-stat-value" style="color:${pctColor(info.stats.pct)}">${info.stats.pct != null ? info.stats.pct + '%' : '-'}</div><div class="day-detail-stat-label">Taxa de acerto</div></div>
+        <div class="day-detail-stat"><div class="day-detail-stat-value">${info.materiasDia.length}</div><div class="day-detail-stat-label">Matérias movimentadas</div></div>
+        <div class="day-detail-stat"><div class="day-detail-stat-value">${info.diasComEstudo || 0}</div><div class="day-detail-stat-label">Dias com estudo</div></div>
+      </div>
+      ${metricasExtrasPanel}
+      <div class="day-detail-grid">
+        <div class="day-detail-panel">
+          <div class="day-detail-panel-title">Horas por matéria</div>
+          <div class="day-detail-panel-sub">${info.totalSeg > 0 ? formatStudyTime(info.totalSeg) + ' distribuídos ' + periodLabel : 'Sem horas ' + periodLabel}</div>
+          <div class="day-detail-chart-layout">
+            <div class="day-detail-chart"><canvas id="chartDayHours"></canvas></div>
+            <div class="day-detail-chart-legend">${buildChartLegend(info.horasItems, item => `${formatStudyTime(item.value)} | ${item.pct}%`, 'Sem horas para mostrar.')}</div>
+          </div>
+        </div>
+        <div class="day-detail-panel">
+          <div class="day-detail-panel-title">${questionsTitle}</div>
+          <div class="day-detail-panel-sub">${info.stats.resolvidas ? (info.stats.acertos || 0) + ' acertos e ' + (info.stats.erros || 0) + ' erros' : 'Sem questões ' + periodLabel}</div>
+          <div class="day-detail-chart-layout">
+            <div class="day-detail-chart"><canvas id="chartDayQuestions"></canvas></div>
+            <div class="day-detail-chart-legend">
+              ${buildChartLegend(info.questoesItems, item => `${item.value} | ${item.pct}%`, 'Sem questões para mostrar.')}
+              ${info.stats.resolvidas ? `<div class="day-detail-legend-row" style="border-top:1px solid var(--border);padding-top:8px"><div></div><div class="day-detail-legend-name">Taxa de acerto</div><div class="day-detail-legend-meta" style="color:${pctColor(info.stats.pct)}">${info.stats.pct}%</div></div>` : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+      ${cycleGoalPanel}
+      <div class="day-detail-grid">
+        <div class="day-detail-panel">
+          <div class="day-detail-panel-title">Resumo por matéria</div>
+          <div class="day-detail-list">${materiaRows}</div>
+        </div>
+        <div class="day-detail-panel">
+          <div class="day-detail-panel-title">Sessões de estudo</div>
+          <div class="day-detail-list">${sessaoRows}</div>
+        </div>
+      </div>
+      <div class="day-detail-panel">
+        <div class="day-detail-panel-title">Lançamentos de questões</div>
+        <div class="day-detail-list">${questaoRows}</div>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  _chartDayHours = makeDoughnutChart(
+    'chartDayHours',
+    _chartDayHours,
+    info.horasItems,
+    info.theme,
+    item => `${item.label}: ${formatStudyTime(item.value)} (${item.pct}%)`
+  );
+  _chartDayQuestions = makeDoughnutChart(
+    'chartDayQuestions',
+    _chartDayQuestions,
+    info.questoesItems,
+    info.theme,
+    item => `${item.label}: ${item.value} (${item.pct}%)`
+  );
+}
+function openMonthDetail(year, monthIndex) {
+  const monthNames = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const start = `${year}-${String(monthIndex + 1).padStart(2, '0')}-01`;
+  const end = CT._dateString(new Date(year, monthIndex + 1, 0));
+  openDayDetail(start, {
+    startKey: start,
+    endKey: end,
+    title: `Estatísticas de ${monthNames[monthIndex]} de ${year}`,
+    scopeText: 'neste mês',
+    emptyLabel: 'nesse mês',
+    periodLabel: 'no mês',
+    questionsTitle: 'Questões do mês',
+    showCycleGoal: true
+  });
+}
+function openYearDetail(year) {
+  openDayDetail(`${year}-01-01`, {
+    startKey: `${year}-01-01`,
+    endKey: `${year}-12-31`,
+    title: `Retrospectiva de estudos de ${year}`,
+    scopeText: 'neste ano',
+    emptyLabel: 'nesse ano',
+    periodLabel: 'no ano',
+    questionsTitle: 'Questões do ano',
+    showCycleGoal: true
+  });
+}
+function openSelectedYearDetail() {
+  const select = document.getElementById('annualAnalysisYear');
+  const year = select ? parseInt(select.value, 10) : null;
+  if (year) openYearDetail(year);
+}
+async function shareTodaySummary() {
+  const card = document.getElementById('todayShareCard');
+  if (!card || typeof html2canvas === 'undefined') return;
+  card.classList.add('capture-mode', 'today-capture-flash');
+  await new Promise(resolve => setTimeout(resolve, 120));
+  try {
+    const canvas = await html2canvas(card, {
+      backgroundColor: null,
+      scale: 2,
+      useCORS: true,
+      logging: false
+    });
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    if (!blob) throw new Error('Falha ao gerar imagem');
+    if (navigator.clipboard && window.ClipboardItem) {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      CT.toast('O de hoje tá pago 💪 Print pronto para colar com Ctrl + V! Poste no Twitter e marque o Track Concursos! @TrackConcursos', '📸');
+      const toastEl = document.getElementById('ct-main-toast');
+      if (toastEl) {
+        if (toastEl.hideTimeout) clearTimeout(toastEl.hideTimeout);
+        toastEl.hideTimeout = setTimeout(() => {
+          toastEl.style.transform = 'translateX(150%)';
+        }, 9500);
+      }
+    } else {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'track-concursos-estudos-de-hoje.png';
+      link.click();
+      URL.revokeObjectURL(url);
+      CT.toast('Clipboard não suportado aqui. O print foi baixado.', '📸');
+    }
+  } catch (err) {
+    console.error(err);
+    CT.toast('Não foi possível gerar o print agora.', '❌');
+  } finally {
+    card.classList.remove('capture-mode');
+    setTimeout(() => card.classList.remove('today-capture-flash'), 380);
+  }
+}
+
+function prepararEstadoEstudosDia(c, hojeKey, totalSegHoje, statsHoje, sessoesHoje, horasItems = []) {
+  const faixa = getFaixaAtualMetricas(c.id);
+  return {
+    concurso: c.nome || 'Meu concurso',
+    detalhes: [c.banca, c.cargo].filter(Boolean).join(' | '),
+    dataLabel: hojeKey ? hojeKey.split('-').reverse().join('/') : '',
+    horas: formatStudyTime(totalSegHoje || 0),
+    questoes: statsHoje.resolvidas || 0,
+    acertosPct: statsHoje.pct,
+    sessoes: sessoesHoje.length || 0,
+    horasItems: horasItems.map(item => ({
+      label: item.label,
+      seconds: item.value,
+      value: Number((item.value / 3600).toFixed(2)),
+      pct: item.pct,
+      color: item.color
+    })),
+    faixa
+  };
+}
+
+function fecharPopupEstudosDia() {
+  document.getElementById('todayVerticalOverlay')?.remove();
+  if (_chartTodayVerticalHours) {
+    _chartTodayVerticalHours.destroy();
+    _chartTodayVerticalHours = null;
+  }
+}
+
+function renderizarGraficoPopupEstudosDia(state) {
+  const canvas = document.getElementById('todayVerticalHoursChart');
+  if (!canvas || !state || !state.horasItems || !state.horasItems.length) return;
+  if (_chartTodayVerticalHours) _chartTodayVerticalHours.destroy();
+  _chartTodayVerticalHours = new Chart(canvas.getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: state.horasItems.map(item => item.label),
+      datasets: [{
+        data: state.horasItems.map(item => item.value),
+        backgroundColor: state.horasItems.map(item => item.color),
+        borderColor: '#0d0f14',
+        borderWidth: 3,
+        hoverOffset: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '58%',
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      animation: { duration: 0 }
+    }
+  });
+}
+
+function abrirPopupEstudosDia() {
+  if (!_todayShareState) render();
+  const state = _todayShareState;
+  if (!state) return;
+  fecharPopupEstudosDia();
+  const horasRows = state.horasItems && state.horasItems.length
+    ? state.horasItems.slice(0, 5).map(item => `
+      <div class="today-vertical-study-row">
+        <div class="today-vertical-study-dot" style="background:${item.color}"></div>
+        <div class="today-vertical-study-name">${escapeHtml(item.label)}</div>
+        <div class="today-vertical-study-time">${formatStudyTime(item.seconds)}</div>
+        <div class="today-vertical-study-pct" style="color:${item.color}">${item.pct}%</div>
+      </div>
+    `).join('')
+    : '<div class="materia-share-empty" style="padding:18px 12px">Nenhuma sessão registrada hoje.</div>';
+  const overlay = document.createElement('div');
+  overlay.id = 'todayVerticalOverlay';
+  overlay.className = 'materia-share-overlay';
+  overlay.innerHTML = `
+    <div class="materia-share-modal">
+      <div class="materia-share-card today-vertical-card" id="todayVerticalCapture">
+        <div class="materia-share-brand">
+          <img src="assets/Track Concursos logo.png" alt="Track Concursos">
+          <div class="materia-share-kicker">Estudos do Dia</div>
+        </div>
+        <div class="materia-share-title">${escapeHtml(state.concurso)}</div>
+        <div class="materia-share-sub">${state.dataLabel ? 'Hoje | ' + escapeHtml(state.dataLabel) : 'Hoje'}${state.detalhes ? ' | ' + escapeHtml(state.detalhes) : ''}</div>
+        <div class="today-vertical-metrics">
+          <div class="today-vertical-metric wide">
+            <div class="materia-share-belt">
+              <img src="${state.faixa.imagem}"${faixaPretaIconClass(state.faixa)} alt="">
+              <div class="materia-share-stat-value" style="font-size:15px;color:${state.faixa.cor || '#fff'};line-height:30px">${escapeHtml(state.faixa.nome || 'Faixa Branca')}</div>
+            </div>
+          </div>
+          <div class="today-vertical-metric">
+            <div class="materia-share-stat-value">${escapeHtml(state.horas)}</div>
+            <div class="materia-share-stat-label">Horas estudadas</div>
+          </div>
+          <div class="today-vertical-metric">
+            <div class="materia-share-stat-value">${state.questoes}</div>
+            <div class="materia-share-stat-label">Questões feitas</div>
+          </div>
+          <div class="today-vertical-metric">
+            <div class="materia-share-stat-value">${state.acertosPct != null ? state.acertosPct + '%' : '-'}</div>
+            <div class="materia-share-stat-label">Acertos</div>
+          </div>
+          <div class="today-vertical-metric">
+            <div class="materia-share-stat-value">${state.sessoes}</div>
+            <div class="materia-share-stat-label">Sessões de estudo</div>
+          </div>
+        </div>
+        <div class="today-vertical-study-block">
+          <div class="today-vertical-study-title">Horas por matéria hoje</div>
+          ${state.horasItems && state.horasItems.length ? `
+            <div class="today-vertical-study-layout">
+              <div class="today-vertical-chart"><canvas id="todayVerticalHoursChart"></canvas></div>
+              <div class="today-vertical-study-list">${horasRows}</div>
+            </div>
+          ` : horasRows}
+        </div>
+      </div>
+      <div class="materia-share-actions">
+        <button type="button" onclick="fecharPopupEstudosDia()">Fechar</button>
+        <button type="button" class="primary" onclick="copiarPrintEstudosDia()">Copiar imagem</button>
+      </div>
+    </div>
+  `;
+  overlay.addEventListener('click', function(event) {
+    if (event.target === overlay) fecharPopupEstudosDia();
+  });
+  document.body.appendChild(overlay);
+  renderizarGraficoPopupEstudosDia(state);
+}
+
+async function copiarPrintEstudosDia() {
+  const card = document.getElementById('todayVerticalCapture');
+  if (!card || typeof html2canvas === 'undefined') return;
+  try {
+    const canvas = await html2canvas(card, {
+      backgroundColor: null,
+      scale: 2,
+      useCORS: true,
+      logging: false
+    });
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    if (!blob) throw new Error('Falha ao gerar imagem');
+    if (navigator.clipboard && window.ClipboardItem) {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      CT.toast('Imagem pronta para colar.', '📸');
+    } else {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'track-concursos-estudos-do-dia.png';
+      link.click();
+      URL.revokeObjectURL(url);
+      CT.toast('Imagem baixada.', '📸');
+    }
+  } catch (err) {
+    console.error(err);
+    CT.toast('Não foi possível gerar a imagem agora.', '❌');
+  }
+}
+
+function getFaixaAtualMetricas(concursoId) {
+  try {
+    const stats = CT.calcStats(CT.getQuestoes({ concursoId }));
+    if (CT._cardExportFaixa) return CT._cardExportFaixa(concursoId, stats);
+  } catch (e) {}
+  return { nome: 'Faixa Branca', imagem: 'assets/faixas/faixabranca.png', cor: '#e8eaf2' };
+}
+
+function faixaPretaIconClass(faixa) {
+  return faixa && faixa.nome === 'Faixa Preta' ? ' class="faixa-preta-icon"' : '';
+}
+
+function prepararEstadoCompartilhamentoPizza(c, ranking, totalSeg, paletteColors) {
+  const positivos = ranking.filter(item => item.seg > 0);
+  const maxRows = 8;
+  const principais = positivos.slice(0, maxRows);
+  const restantes = positivos.slice(maxRows);
+  const items = principais.map((item, index) => ({
+    label: item.nome,
+    seconds: item.seg,
+    value: item.seg,
+    questoes: item.q && item.q.resolvidas ? item.q.resolvidas : 0,
+    acertosPct: item.q && item.q.pct != null ? item.q.pct : null,
+    color: paletteColors[index % paletteColors.length],
+    pct: totalSeg > 0 ? Math.round((item.seg / totalSeg) * 100) : 0
+  }));
+  if (restantes.length) {
+    const restSeg = restantes.reduce((acc, item) => acc + item.seg, 0);
+    const restQuestoes = restantes.reduce((acc, item) => acc + ((item.q && item.q.resolvidas) || 0), 0);
+    const restAcertos = restantes.reduce((acc, item) => acc + ((item.q && item.q.acertos) || 0), 0);
+    items.push({
+      label: 'Outras matérias',
+      seconds: restSeg,
+      value: restSeg,
+      questoes: restQuestoes,
+      acertosPct: restQuestoes > 0 ? Math.round((restAcertos / restQuestoes) * 100) : null,
+      color: '#94a3b8',
+      pct: totalSeg > 0 ? Math.round((restSeg / totalSeg) * 100) : 0
+    });
+  }
+  const faixa = getFaixaAtualMetricas(c.id);
+  const cobertura = (c.coberto || 0) + (c.cobertoPre || 0);
+  const detalhes = [c.banca, c.cargo].filter(Boolean).join(' | ');
+  const questoesStatsTotal = CT.calcStats(CT.getQuestoes({ concursoId: c.id }));
+  return {
+    concurso: c.nome || 'Meu concurso',
+    detalhes,
+    totalSeg,
+    totalLabel: totalSeg > 0 ? CT.formatarTempo(totalSeg) : '0min',
+    questoesTotal: questoesStatsTotal.resolvidas || 0,
+    acertosPctTotal: questoesStatsTotal.pct,
+    cobertura,
+    faixa,
+    items
+  };
+}
+
+function fecharPopupDistribuicaoMateria() {
+  document.getElementById('materiaShareOverlay')?.remove();
+  if (_chartPizzaShare) {
+    _chartPizzaShare.destroy();
+    _chartPizzaShare = null;
+  }
+}
+
+function renderizarGraficoPopupDistribuicao(state) {
+  const canvas = document.getElementById('materiaShareChart');
+  if (!canvas || !state || !state.items.length) return;
+  const theme = themePalette();
+  if (_chartPizzaShare) _chartPizzaShare.destroy();
+  _chartPizzaShare = new Chart(canvas.getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: state.items.map(item => item.label),
+      datasets: [{
+        data: state.items.map(item => item.value),
+        backgroundColor: state.items.map(item => item.color),
+        borderColor: '#0d0f14',
+        borderWidth: 3,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '58%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: theme.tooltipBg,
+          borderColor: theme.tooltipBorder,
+          borderWidth: 1,
+          titleColor: theme.tooltipTitle,
+          bodyColor: theme.tooltipBody,
+          callbacks: {
+            label: function(ctx) {
+              const item = state.items[ctx.dataIndex];
+              return ' ' + formatStudyTime(item.seconds) + ' (' + item.pct + '%)';
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function abrirPopupDistribuicaoMateria() {
+  if (!_pizzaShareState) render();
+  const state = _pizzaShareState;
+  if (!state) return;
+  fecharPopupDistribuicaoMateria();
+  const rows = state.items.length ? state.items.map(item => `
+    <div class="materia-share-row">
+      <div class="materia-share-dot" style="background:${item.color}"></div>
+      <div>
+        <div class="materia-share-name">${escapeHtml(item.label)}</div>
+        <div class="materia-share-meta">${item.questoes || 0} questões | ${item.acertosPct != null ? item.acertosPct + '% de acertos' : 'sem acertos registrados'}</div>
+      </div>
+      <div class="materia-share-time">${formatStudyTime(item.seconds)}</div>
+      <div class="materia-share-pct" style="color:${item.color}">${item.pct}%</div>
+    </div>
+  `).join('') : '<div class="materia-share-empty">Nenhuma sessão registrada ainda.</div>';
+
+  const overlay = document.createElement('div');
+  overlay.id = 'materiaShareOverlay';
+  overlay.className = 'materia-share-overlay';
+  overlay.innerHTML = `
+    <div class="materia-share-modal">
+      <div class="materia-share-card" id="materiaShareCapture">
+        <div class="materia-share-brand">
+          <img src="assets/Track Concursos logo.png" alt="Track Concursos">
+          <div class="materia-share-kicker">Gráficos de Estudo</div>
+        </div>
+        <div class="materia-share-title">${escapeHtml(state.concurso)}</div>
+        <div class="materia-share-sub">${state.detalhes ? escapeHtml(state.detalhes) : 'Métricas do concurso'}</div>
+        <div class="materia-share-stats">
+          <div class="materia-share-stat">
+            <div class="materia-share-stat-value">${escapeHtml(state.totalLabel)}</div>
+            <div class="materia-share-stat-label">Horas estudadas</div>
+          </div>
+          <div class="materia-share-stat">
+            <div class="materia-share-stat-value">x${state.cobertura || 0}</div>
+            <div class="materia-share-stat-label">Edital coberto</div>
+          </div>
+          <div class="materia-share-stat">
+            <div class="materia-share-belt">
+              <img src="${state.faixa.imagem}"${faixaPretaIconClass(state.faixa)} alt="">
+              <div>
+                <div class="materia-share-stat-value" style="font-size:14px;color:${state.faixa.cor || '#fff'};line-height:30px">${escapeHtml(state.faixa.nome || 'Faixa Branca')}</div>
+              </div>
+            </div>
+          </div>
+          <div class="materia-share-stat">
+            <div class="materia-share-stat-value">${state.questoesTotal || 0}</div>
+            <div class="materia-share-stat-label">${state.acertosPctTotal != null ? state.acertosPctTotal + '% acertos' : 'Acertos'}</div>
+          </div>
+        </div>
+        <div class="materia-share-chart">
+          ${state.items.length ? '<canvas id="materiaShareChart"></canvas>' : '<div class="materia-share-empty">Sem dados para gerar gráfico.</div>'}
+        </div>
+        <div class="materia-share-list">${rows}</div>
+      </div>
+      <div class="materia-share-actions">
+        <button type="button" onclick="fecharPopupDistribuicaoMateria()">Fechar</button>
+        <button type="button" class="primary" onclick="copiarPrintDistribuicaoMateria()">Copiar imagem</button>
+      </div>
+    </div>
+  `;
+  overlay.addEventListener('click', function(event) {
+    if (event.target === overlay) fecharPopupDistribuicaoMateria();
+  });
+  document.body.appendChild(overlay);
+  setTimeout(function() { renderizarGraficoPopupDistribuicao(state); }, 30);
+}
+
+async function copiarPrintDistribuicaoMateria() {
+  const card = document.getElementById('materiaShareCapture');
+  if (!card || typeof html2canvas === 'undefined') return;
+  try {
+    const canvas = await html2canvas(card, {
+      backgroundColor: null,
+      scale: 2,
+      useCORS: true,
+      logging: false
+    });
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    if (!blob) throw new Error('Falha ao gerar imagem');
+    if (navigator.clipboard && window.ClipboardItem) {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      CT.toast('Imagem pronta para colar.', '📸');
+    } else {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'track-concursos-distribuicao-por-materia.png';
+      link.click();
+      URL.revokeObjectURL(url);
+      CT.toast('Imagem baixada.', '📸');
+    }
+  } catch (err) {
+    console.error(err);
+    CT.toast('Não foi possível gerar a imagem agora.', '❌');
+  }
+}
+
+function setJanela(dias, el) {
+  _janela = dias;
+  document.querySelectorAll('.filtro-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function pctColor(p){return CT.pctColor?CT.pctColor(p):'var(--text3)';}
+function formatStudyTime(segundos) {
+  return CT.formatarTempo(Math.max(0, Math.round(segundos || 0))) || '0min';
+}
+function formatHoursAsStudyTime(horas) {
+  return formatStudyTime((horas || 0) * 3600);
+}
+function formatStudyTypeLabel(sessao) {
+  if (sessao && sessao.tipoEstudo) return String(sessao.tipoEstudo);
+  if (!sessao || !sessao.origem) return '';
+  if (sessao.origem === 'pomodoro') return 'Pomodoro';
+  if (sessao.origem === 'manual_ciclo') return 'Ciclo de estudos';
+  return '';
+}
+
+function formatHeatmapDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function renderHorasHeatmap(container, datas, horasPorDia) {
+  const theme = themePalette();
+  const horasMap = new Map(datas.map((d, i) => [d, parseFloat((horasPorDia[i] || 0).toFixed(2))]));
+  const maxHoras = Math.max(...horasPorDia, 0);
+
+  if (!datas.length) {
+    container.innerHTML = '<div style="padding:20px;border:1px dashed var(--border);border-radius:14px;color:var(--text3);text-align:center">Nenhum estudo registrado no periodo.</div>';
+    return;
+  }
+
+  const first = new Date(datas[0] + 'T00:00:00');
+  const last = new Date(datas[datas.length - 1] + 'T00:00:00');
+  const totalDiasComEstudo = horasPorDia.filter(h => h > 0).length;
+  const maiorCarga = Math.max(...horasPorDia, 0);
+  const annualYears = [...new Set([
+    ...CT.getSessoes({ concursoId: cId }).filter(s => s.data).map(s => String(s.data).slice(0, 4)),
+    ...CT.getQuestoes({ concursoId: cId }).filter(q => q.data).map(q => String(q.data).slice(0, 4))
+  ])].filter(Boolean).sort((a,b) => Number(b) - Number(a));
+  const annualControl = annualYears.length ? `
+    <div class="annual-analysis">
+      <span class="annual-analysis-label">Análise anual</span>
+      <select id="annualAnalysisYear" title="Escolha um ano com estudos registrados">
+        ${annualYears.map(year => `<option value="${year}">${year}</option>`).join('')}
+      </select>
+      <button type="button" onclick="openSelectedYearDetail()">Ver</button>
+    </div>
+  ` : '';
+  const monthLabels = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+  const weekLabels = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB', 'DOM'];
+
+  function heatColor(horas, inRange) {
+    if (!inRange) return theme.heatOut;
+    if (horas <= 0) return theme.heatEmpty;
+    const ratio = maxHoras > 0 ? horas / maxHoras : 0;
+    if (ratio >= 0.9) return theme.heat5;
+    if (ratio >= 0.72) return theme.heat4;
+    if (ratio >= 0.5) return theme.heat3;
+    if (ratio >= 0.28) return theme.heat2;
+    return theme.heat1;
+  }
+
+  function heatTextColor(horas, inRange) {
+    if (!inRange || horas <= 0) return 'var(--text3)';
+    const ratio = maxHoras > 0 ? horas / maxHoras : 0;
+    return ratio >= 0.72 ? '#082016' : 'var(--text)';
+  }
+
+  const months = [];
+  let monthCursor = new Date(first.getFullYear(), first.getMonth(), 1);
+  const finalMonth = new Date(last.getFullYear(), last.getMonth(), 1);
+  while (monthCursor <= finalMonth) {
+    const monthStart = new Date(monthCursor.getFullYear(), monthCursor.getMonth(), 1);
+    const monthEnd = new Date(monthCursor.getFullYear(), monthCursor.getMonth() + 1, 0);
+    const leading = (monthStart.getDay() + 6) % 7;
+    const trailing = 6 - ((monthEnd.getDay() + 6) % 7);
+    const gridStart = new Date(monthStart);
+    gridStart.setDate(gridStart.getDate() - leading);
+    const gridEnd = new Date(monthEnd);
+    gridEnd.setDate(gridEnd.getDate() + trailing);
+
+    const cells = [];
+    const dayCursor = new Date(gridStart);
+    while (dayCursor <= gridEnd) {
+      const key = CT._dateString(dayCursor);
+      const horas = horasMap.get(key) || 0;
+      const inCurrentMonth = dayCursor.getMonth() === monthCursor.getMonth();
+      const inRange = key >= datas[0] && key <= datas[datas.length - 1];
+      cells.push({
+        key,
+        horas,
+        day: dayCursor.getDate(),
+        inCurrentMonth,
+        inRange
+      });
+      dayCursor.setDate(dayCursor.getDate() + 1);
+    }
+
+    months.push({
+      title: monthLabels[monthCursor.getMonth()],
+      year: monthCursor.getFullYear(),
+      monthIndex: monthCursor.getMonth(),
+      cells
+    });
+    monthCursor = new Date(monthCursor.getFullYear(), monthCursor.getMonth() + 1, 1);
+  }
+
+  container.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;align-items:start">
+      ${months.map(month => `
+        <div class="heatmap-month-card" role="button" tabindex="0" onclick="openMonthDetail(${month.year},${month.monthIndex})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openMonthDetail(${month.year},${month.monthIndex});}" title="Ver retrospectiva de ${month.title}/${month.year}">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="font-size:13px;font-weight:800;letter-spacing:1px;color:var(--text)">${month.title}</div>
+            <div style="font-size:11px;color:var(--text3)">${month.year}</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px">
+            ${weekLabels.map(label => `
+              <div style="font-size:10px;color:var(--text3);text-align:center;font-weight:700;letter-spacing:.4px;padding-bottom:2px">${label}</div>
+            `).join('')}
+            ${month.cells.map(day => {
+              const commonStyle = `
+                  width:100%;
+                  min-height:30px;
+                  border-radius:10px;
+                  padding:4px 4px 3px;
+                  border:1px solid ${day.horas > 0 && day.inCurrentMonth && day.inRange ? (window.TrackTheme ? TrackTheme.alpha(theme.heat5, 0.24) : 'rgba(62,207,142,0.22)') : 'var(--border)'};
+                  background:${day.inCurrentMonth ? heatColor(day.horas, day.inRange) : 'var(--surface-subtle)'};
+                  color:${day.inCurrentMonth ? heatTextColor(day.horas, day.inRange) : 'var(--text3)'};
+                  box-shadow:${day.horas > 0 && day.inCurrentMonth && day.inRange ? 'inset 0 1px 0 var(--surface-strong), 0 10px 20px ' + (window.TrackTheme ? TrackTheme.alpha(theme.heat4, 0.12) : 'rgba(47,189,123,0.08)') : 'none'};
+                  display:flex;
+                  flex-direction:column;
+                  justify-content:space-between;
+                `;
+              const content = `
+                <div style="font-size:10px;font-weight:700;line-height:1">${day.day}</div>
+                <div style="font-size:9px;line-height:1;text-align:left;color:${day.horas > 0 && day.inCurrentMonth && day.inRange ? heatTextColor(day.horas, day.inRange) : 'transparent'}">${day.horas > 0 && day.inCurrentMonth && day.inRange ? formatHoursAsStudyTime(day.horas) : '&nbsp;'}</div>
+              `;
+              if (!day.inCurrentMonth) {
+                return `
+                  <div
+                    class="heatmap-day-out"
+                    onclick="event.stopPropagation()"
+                    title="Fora de ${month.title}/${month.year}"
+                    style="${commonStyle}"
+                  >${content}</div>
+                `;
+              }
+              return `
+                <button
+                  type="button"
+                  class="heatmap-day-btn"
+                  onclick="event.stopPropagation(); openDayDetail('${day.key}')"
+                  onkeydown="event.stopPropagation()"
+                  title="${formatHeatmapDate(day.key)} - ${formatHoursAsStudyTime(day.horas)}"
+                  style="${commonStyle}"
+                >${content}</button>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;color:var(--text3);font-size:11px">
+        <span>${totalDiasComEstudo} dias com estudo</span>
+        <span>Maior carga: ${formatHoursAsStudyTime(maiorCarga)}</span>
+      </div>
+      ${annualControl}
+      <div style="display:flex;align-items:center;gap:6px;color:var(--text3);font-size:11px">
+        <span>Menos</span>
+        <span style="width:14px;height:14px;border-radius:4px;background:${theme.heatEmpty};border:1px solid var(--border)"></span>
+        <span style="width:14px;height:14px;border-radius:4px;background:${theme.heat1};border:1px solid ${window.TrackTheme ? TrackTheme.alpha(theme.heat5, 0.12) : 'rgba(62,207,142,0.12)'}"></span>
+        <span style="width:14px;height:14px;border-radius:4px;background:${theme.heat2};border:1px solid ${window.TrackTheme ? TrackTheme.alpha(theme.heat5, 0.12) : 'rgba(62,207,142,0.12)'}"></span>
+        <span style="width:14px;height:14px;border-radius:4px;background:${theme.heat3};border:1px solid ${window.TrackTheme ? TrackTheme.alpha(theme.heat5, 0.12) : 'rgba(62,207,142,0.12)'}"></span>
+        <span style="width:14px;height:14px;border-radius:4px;background:${theme.heat5};border:1px solid ${window.TrackTheme ? TrackTheme.alpha(theme.heat5, 0.12) : 'rgba(62,207,142,0.12)'}"></span>
+        <span>Mais</span>
+      </div>
+    </div>
+  `;
+}
+
+function render() {
+  const c = CT.getConcurso(cId);
+  if (!c) return;
+
+  if (_janela === 0) {
+    document.getElementById('histSub').textContent = c.nome + ' — todos os dias';
+  } else {
+    document.getElementById('histSub').textContent = c.nome + ' — últimos ' + _janela + ' dias';
+  }
+  document.querySelector('.concurso-nome').textContent = c.nome;
+  document.querySelector('.concurso-banca').textContent = c.banca || '—';
+
+  // Gera array de datas
+  const datas = [];
+  if (_janela === 0) {
+    // Todos: encontra a data mais antiga entre sessões e questões
+    const todasS = CT.getSessoes({ concursoId: cId });
+    const todasQ = CT.getQuestoes({ concursoId: cId });
+    const allDates = [...todasS.map(s => s.data), ...todasQ.map(q => q.data)].filter(Boolean).sort();
+    if (allDates.length > 0) {
+      const inicio = new Date(allDates[0] + 'T12:00:00');
+      const hoje = new Date(); hoje.setHours(12,0,0,0);
+      for (let d = new Date(inicio); d <= hoje; d.setDate(d.getDate() + 1)) {
+        datas.push(CT._dateString(d));
+      }
+    }
+  } else {
+    for (let i = _janela - 1; i >= 0; i--) {
+      const d = new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate() - i);
+      datas.push(CT._dateString(d));
+    }
+  }
+  const labels = datas.map(d => { const p=d.split('-'); return p[2]+'/'+p[1]; });
+
+  // Sessões e questões por dia
+  const todasSessoes  = CT.getSessoes({ concursoId: cId });
+  const todasQuestoes = CT.getQuestoes({ concursoId: cId });
+
+  const horasPorDia    = datas.map(d => CT.totalSegundos(todasSessoes.filter(s=>s.data===d))/3600);
+  const questoesPorDia = datas.map(d => CT.calcStats(todasQuestoes.filter(q=>q.data===d)).resolvidas || 0);
+  const datasSet = new Set(datas);
+
+  const totalHorasPeriodo   = horasPorDia.reduce((a,b)=>a+b,0);
+  const totalQuestoesPeriodo = questoesPorDia.reduce((a,b)=>a+b,0);
+  const diasAtivos = horasPorDia.filter(h=>h>0).length;
+
+  // Stats globais
+  const topicos   = CT.getTopicos().filter(t=>t.concursoId===cId);
+  const estudados = topicos.filter(t=>t.estudado).length;
+  const qAll      = CT.calcStats(todasQuestoes);
+  const segTotal  = CT.totalSegundos(todasSessoes);
+
+  document.getElementById('statsGlobais').innerHTML = [
+    { icon:'timer',     val: CT.formatarTempo(segTotal)||'0h', label:'Horas totais',       color:'var(--accent)',  iconColor:'var(--accent)' },
+    { icon:'questions', val: qAll.resolvidas||0,               label:'Questões no total',  color:'var(--yellow)',  iconColor:'var(--accent2)' },
+    { icon:'target-color', val: qAll.pct!=null?qAll.pct+'%':'—',  label:'Taxa de acertos',    color:pctColor(qAll.pct), iconColor:'var(--green)' },
+    { icon:'task',      val: estudados+'/'+topicos.length,     label:'Tópicos concluídos', color:'var(--accent2)', iconColor:'var(--green)' },
+  ].map(s=>`
+    <div class="metrics-stat-card">
+      <div class="metrics-stat-main">
+        <span class="metrics-stat-icon" data-stat-icon="${s.icon}" aria-hidden="true" style="color:${s.iconColor}"></span>
+        <div class="metrics-stat-value" style="color:${s.color}">${escapeHtml(s.val)}</div>
+      </div>
+      <div class="metrics-stat-label">${escapeHtml(s.label)}</div>
+    </div>`).join('');
+
+  // Labels subheader
+  document.getElementById('lblHoras').textContent =
+    formatStudyTime(totalHorasPeriodo * 3600) + ' em ' + diasAtivos + ' dias ativos';
+  document.getElementById('lblQuestoes').textContent =
+    totalQuestoesPeriodo + ' questões no período';
+
+  // Heatmap de horas
+  if (_chartHoras) _chartHoras.destroy();
+  _chartHoras = null;
+  renderHorasHeatmap(document.getElementById('chartHoras'), datas, horasPorDia);
+
+  // Chart questões
+  const ctxQ = document.getElementById('chartQuestoes').getContext('2d');
+  if (_chartQuestoes) _chartQuestoes.destroy();
+  _chartQuestoes = null;
+
+  // Gráfico Pizza — distribuição por matéria
+  const materias = CT.getMaterias(cId);
+  const desempenhoMaterias = materias.map(m => {
+    const questoesMateriaPeriodo = todasQuestoes.filter(q => q.materiaId === m.id && datasSet.has(q.data));
+    const stats = CT.calcStats(questoesMateriaPeriodo);
+    return {
+      id: m.id,
+      nome: m.nome,
+      resolvidas: stats.resolvidas || 0,
+      acertos: stats.acertos || 0,
+      pct: stats.pct
+    };
+  }).filter(m => m.resolvidas > 0);
+
+  document.getElementById('lblQuestoes').textContent = desempenhoMaterias.length
+      ? desempenhoMaterias.length + ' matérias com questões no período'
+      : 'Sem questões suficientes no período';
+
+  const rankingChart = [...desempenhoMaterias]
+    .sort((a,b) => {
+      if ((b.pct || 0) !== (a.pct || 0)) return (b.pct || 0) - (a.pct || 0);
+      return b.resolvidas - a.resolvidas;
+    })
+    .slice(0, 6);
+  const theme = themePalette();
+
+  if (rankingChart.length) {
+    _chartQuestoes = new Chart(ctxQ, {
+      type: 'bar',
+      data: {
+        labels: rankingChart.map(m => m.nome.length > 22 ? m.nome.slice(0, 22) + '...' : m.nome),
+        datasets: [{
+          data: rankingChart.map(m => m.pct),
+          backgroundColor: rankingChart.map(m => {
+            const pct = m.pct || 0;
+            if (pct >= 93) return 'rgba(52,245,141,0.82)';
+            if (pct >= 80) return 'rgba(156,247,204,0.82)';
+            if (pct >= 75) return 'rgba(255,228,92,0.82)';
+            if (pct >= 50) return 'rgba(245,135,74,0.82)';
+            return 'rgba(245,90,90,0.82)';
+          }),
+          borderColor: rankingChart.map(m => pctColor(m.pct)),
+          borderWidth: 1.5,
+          borderRadius: 8,
+          borderSkipped: false,
+          barThickness: 16
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: theme.tooltipBg,
+            borderColor: theme.tooltipBorder,
+            borderWidth: 1,
+            titleColor: theme.tooltipTitle,
+            bodyColor: theme.tooltipBody,
+            padding: 10,
+            cornerRadius: 8,
+            callbacks: {
+              label: function(ctx) {
+                const item = rankingChart[ctx.dataIndex];
+                return ' ' + item.pct + '% | ' + item.acertos + '/' + item.resolvidas + ' acertos';
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            min: 0,
+            max: 100,
+            ticks: {
+              color: theme.chartAxis,
+              font:{size:10},
+              callback: function(value) { return value + '%'; }
+            },
+            grid: { color: theme.chartGrid }
+          },
+          y: {
+            ticks: { color: theme.chartAxisStrong, font:{size:11, weight:'600'} },
+            grid: { display:false }
+          }
+        }
+      }
+    });
+  } else {
+    ctxQ.clearRect(0, 0, ctxQ.canvas.width, ctxQ.canvas.height);
+    _chartQuestoes = null;
+  }
+
+  const topFacilidade = [...desempenhoMaterias]
+    .sort((a,b) => {
+      if ((b.pct || 0) !== (a.pct || 0)) return (b.pct || 0) - (a.pct || 0);
+      return b.resolvidas - a.resolvidas;
+    })
+    .slice(0, 3);
+
+  const topDificuldade = [...desempenhoMaterias]
+    .sort((a,b) => {
+      if ((a.pct || 0) !== (b.pct || 0)) return (a.pct || 0) - (b.pct || 0);
+      return b.resolvidas - a.resolvidas;
+    })
+    .slice(0, 3);
+
+  function renderResumoMaterias(titulo, color, items, emptyText) {
+    return `
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px 16px">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:${color};margin-bottom:10px">${titulo}</div>
+        ${items.length ? items.map(item => `
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.nome}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">${item.acertos}/${item.resolvidas} acertos</div>
+            </div>
+            <div style="font-family:var(--mono);font-size:15px;font-weight:800;color:${pctColor(item.pct)}">${item.pct}%</div>
+          </div>
+        `).join('') : `<div style="font-size:12px;color:var(--text3);padding:8px 0">${emptyText}</div>`}
+      </div>
+    `;
+  }
+
+  document.getElementById('analiseMateriasResumo').innerHTML = [
+    renderResumoMaterias('Maior facilidade', '#9cf7cc', topFacilidade, 'Resolva questões no período para aparecer aqui.'),
+    renderResumoMaterias('Maior dificuldade', 'var(--orange)', topDificuldade, 'Resolva questões no período para aparecer aqui.')
+  ].join('');
+  const ranking = materias.map(m => {
+    const seg = CT.totalSegundos(CT.getSessoes({ concursoId: cId, materiaId: m.id }));
+    const q   = CT.calcStats(CT.getQuestoes({ materiaId: m.id }));
+    const tops = CT.getTopicos(m.id);
+    const est  = tops.filter(t=>t.estudado).length;
+    return { nome: m.nome, seg, q, est, total: tops.length };
+  }).sort((a,b)=>b.seg-a.seg);
+
+  const totalSeg = ranking.reduce((a,m)=>a+m.seg,0);
+  const pizzaLabels = ranking.map(m => m.nome);
+  const pizzaData   = ranking.map(m => parseFloat((m.seg/3600).toFixed(2)));
+  const paletteColors = getPizzaColors();
+  const pizzaColors   = ranking.map((_,i) => paletteColors[i % paletteColors.length]);
+  _pizzaShareState = prepararEstadoCompartilhamentoPizza(c, ranking, totalSeg, paletteColors);
+
+  document.getElementById('lblPizza').textContent = totalSeg > 0
+    ? CT.formatarTempo(totalSeg) + ' no total'
+    : 'Nenhuma sessão registrada';
+
+  const ctxP = document.getElementById('chartPizza').getContext('2d');
+  if (_chartPizza) _chartPizza.destroy();
+
+  if (totalSeg > 0) {
+    _chartPizza = new Chart(ctxP, {
+      type: 'doughnut',
+      data: {
+        labels: pizzaLabels,
+        datasets: [{
+          data: pizzaData,
+          backgroundColor: pizzaColors,
+          borderColor: theme.chartSurfaceBorder,
+          borderWidth: 2,
+          hoverOffset: 8,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        cutout: '55%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: theme.tooltipBg,
+            borderColor: window.TrackTheme ? TrackTheme.alpha(theme.accent, 0.3) : 'rgba(79,142,247,0.3)',
+            borderWidth: 1,
+            titleColor: theme.tooltipTitle,
+            bodyColor: theme.tooltipBody,
+            padding: 10,
+            cornerRadius: 8,
+            callbacks: {
+              label: function(ctx) {
+                const pct = totalSeg > 0 ? Math.round((ranking[ctx.dataIndex].seg / totalSeg) * 100) : 0;
+                return ' ' + formatStudyTime(ranking[ctx.dataIndex].seg) + ' (' + pct + '%)';
+              }
+            }
+          }
+        }
+      }
+    });
+  } else {
+    // Limpa o canvas se não houver dados
+    ctxP.clearRect(0, 0, ctxP.canvas.width, ctxP.canvas.height);
+    _chartPizza = null;
+  }
+
+  // Legenda customizada ao lado da pizza
+  document.getElementById('pizzaLegend').innerHTML = ranking.length > 0
+    ? ranking.map((m, i) => {
+        const pct = totalSeg > 0 ? Math.round((m.seg / totalSeg) * 100) : 0;
+        return `
+        <div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border)">
+          <div style="width:10px;height:10px;border-radius:3px;flex-shrink:0;background:${paletteColors[i % paletteColors.length]}"></div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.nome}</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text3);flex-shrink:0">${CT.formatarTempo(m.seg)||'0min'}</div>
+          <div style="font-family:var(--mono);font-size:11px;font-weight:700;color:${paletteColors[i % paletteColors.length]};flex-shrink:0;width:32px;text-align:right">${pct}%</div>
+        </div>`;
+      }).join('')
+    : '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">Nenhuma sessão registrada ainda.</div>';
+
+  const hojeKey = CT._today();
+  const sessoesHoje = todasSessoes
+    .filter(s => s.data === hojeKey)
+    .sort((a,b) => String(b.horaInicio || '').localeCompare(String(a.horaInicio || '')));
+  const questoesHoje = todasQuestoes.filter(q => q.data === hojeKey);
+  const totalSegHoje = CT.totalSegundos(sessoesHoje);
+  const statsHoje = CT.calcStats(questoesHoje);
+  const colorByMateria = new Map();
+  ranking.forEach((m, i) => colorByMateria.set(m.nome, paletteColors[i % paletteColors.length]));
+  const horasHojeByMateria = materias.map((m, i) => {
+    const segMateria = CT.totalSegundos(sessoesHoje.filter(s => s.materiaId === m.id));
+    return {
+      label: m.nome,
+      value: segMateria,
+      color: colorByMateria.get(m.nome) || paletteColors[i % paletteColors.length],
+      pct: totalSegHoje > 0 ? Math.round((segMateria / totalSegHoje) * 100) : 0
+    };
+  }).filter(item => item.value > 0);
+  _todayShareState = prepararEstadoEstudosDia(c, hojeKey, totalSegHoje, statsHoje, sessoesHoje, horasHojeByMateria);
+  const questoesHojeItens = [
+    { label: 'Certas', value: statsHoje.acertos || 0, color: theme.green, pct: statsHoje.resolvidas > 0 ? Math.round(((statsHoje.acertos || 0) / statsHoje.resolvidas) * 100) : 0 },
+    { label: 'Erradas', value: statsHoje.erros || 0, color: theme.red, pct: statsHoje.resolvidas > 0 ? Math.round(((statsHoje.erros || 0) / statsHoje.resolvidas) * 100) : 0 }
+  ].filter(item => item.value > 0);
+
+  document.getElementById('todaySummarySub').textContent = `Hoje (${hojeKey.split('-').reverse().join('/')})`;
+  document.getElementById('todayHoursSub').textContent = totalSegHoje > 0
+    ? formatStudyTime(totalSegHoje) + ' estudados hoje'
+    : 'Nenhuma hora registrada hoje';
+  document.getElementById('todayQuestionsSub').textContent = statsHoje.resolvidas > 0
+    ? statsHoje.resolvidas + ' questões feitas hoje'
+    : 'Nenhuma questão registrada hoje';
+  document.getElementById('todaySessionsSub').textContent = '';
+  document.getElementById('todayHoursLegend').innerHTML = buildLegendRows(horasHojeByMateria, item => formatStudyTime(item.value), 'Nenhuma sessão de estudo hoje.');
+  document.getElementById('todayQuestionsLegend').innerHTML = buildLegendRows(questoesHojeItens, item => String(item.value), 'Nenhuma questão feita hoje.');
+  document.getElementById('todaySessionsList').innerHTML = sessoesHoje.length
+    ? sessoesHoje.map(s => {
+        const mat = s.materiaId ? CT.getMateria(s.materiaId) : null;
+        const hora = s.horaInicio ? new Date(s.horaInicio).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : '--:--';
+        const tipoEstudo = formatStudyTypeLabel(s);
+        const metricas = CT.formatarResumoMetricasSessao ? CT.formatarResumoMetricasSessao(s) : '';
+        const metaSessao = [tipoEstudo, metricas].filter(Boolean).join(' | ');
+        return `
+          <div class="today-session-item">
+            <div class="today-session-hour">${hora}</div>
+            <div style="min-width:0">
+              <div class="today-session-name">${mat ? mat.nome : 'Sessão livre'}</div>
+              ${metaSessao ? `<div class="today-session-meta">${escapeHtml(metaSessao)}</div>` : ''}
+            </div>
+            <div class="today-session-duration">${formatStudyTime(s.duracaoSegundos)}</div>
+          </div>`;
+      }).join('')
+    : '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">Nenhuma sessão de estudo hoje.</div>';
+
+  _chartTodayHours = makeDoughnutChart(
+    'chartTodayHours',
+    _chartTodayHours,
+    horasHojeByMateria.map(item => ({ label: item.label, value: Number((item.value / 3600).toFixed(2)), color: item.color, rawSeconds: item.value, pct: item.pct })),
+    theme,
+    item => `${item.label}: ${formatStudyTime(item.rawSeconds)} (${item.pct}%)`
+  );
+  _chartTodayQuestions = makeDoughnutChart(
+    'chartTodayQuestions',
+    _chartTodayQuestions,
+    questoesHojeItens,
+    theme,
+    item => `${item.label}: ${item.value} (${item.pct}%)`
+  );
+}
+
+document.getElementById('todayShareBtn')?.addEventListener('click', function(event) {
+  event.stopPropagation();
+  abrirPopupEstudosDia();
+});
+render();
+</script>
+
+
+
+<script src="nav.js"></script>
+<script src="timer-popup.js"></script>
+</body>
+</html>
+

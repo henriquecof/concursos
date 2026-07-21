@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="theme.js"></script>
+  <title>Track Concursos - Notas v1.0.2</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0f14;
+      --bg2: #13161e;
+      --bg3: #1a1e2a;
+      --border: #252836;
+      --accent: #4f8ef7;
+      --text: #e8eaf2;
+      --text2: #f1f2f6;
+      --text3: #a1a6c2;
+      --sans: 'Inter', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      padding: 42px 22px
+    }
+
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto
+    }
+
+    .head {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 24px
+    }
+
+    .logo {
+      width: 82px;
+      height: 82px;
+      object-fit: contain;
+      flex-shrink: 0
+    }
+
+    h1 {
+      font-size: 30px;
+      line-height: 1.1;
+      margin-bottom: 8px
+    }
+
+    .lead {
+      color: var(--text3);
+      font-size: 15px;
+      line-height: 1.7;
+      max-width: 760px
+    }
+
+    .badge {
+      display: inline-flex;
+      padding: 5px 11px;
+      border: 1px solid rgba(79, 142, 247, .32);
+      border-radius: 999px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 10px
+    }
+
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 16px
+    }
+
+    h2 {
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: var(--text2)
+    }
+
+    p,
+    li {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text3)
+    }
+
+    ul {
+      padding-left: 18px
+    }
+
+    li+li {
+      margin-top: 4px
+    }
+
+    code {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1px 5px;
+      color: var(--text2)
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700
+    }
+
+    .back {
+      display: inline-flex;
+      margin-top: 8px
+    }
+
+    @media (max-width:760px) {
+      body {
+        padding: 28px 16px
+      }
+
+      .head {
+        align-items: flex-start
+      }
+
+      .logo {
+        width: 64px;
+        height: 64px
+      }
+
+      h1 {
+        font-size: 25px
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="wrap">
+    <div class="head">
+      <img class="logo" src="assets/logo-oficial-track-concursos.png" alt="Track Concursos">
+      <div>
+        <span class="badge">v1.0.2</span>
+        <h1>Notas da atualização</h1>
+        <p class="lead">Atualização pequena focada em manutenção e fluxo de desenvolvimento.</p>
+      </div>
+    </div>
+
+    <section class="card">
+      <h2>Exportar Concurso com Links</h2>
+      <ul>
+        <li>Agora é possível exportar seu concurso com links já linkados, através do Card do seu concurso na aba Dashboard (clique em exportar template). Crie seus próprios editais premium e compartilhe ou guarde-os como backup.</li>
+      </ul>
+      <p>PS: CUIDADO com editais compartilhados por outras pessoas, podem conter links maliciosos ou até mesmo conteúdo protegido por direitos autorais! Eu não incentivo e não me responsabilizo por nenhum edital criado por usuários do programa, se quiser um Edital Premium seguro feito POR MIM, visite nosso canal no telegram ou peça diretamente para mim.</p>
+      <p>Essa ferramenta foi criada apenas para facilitar um backup e compartilhamento de editais organizados e verticalizados.</p>
+    </section>
+
+    <section class="card">
+      <h2>Meus Concursos em grupos</h2>
+      <ul>
+        <li>A aba <code>Meus Concursos</code> agora separa concursos ativos em dois grupos: <code>FOCO TOTAL</code> e <code>NA MIRA</code>.</li>
+        <li>Concursos em <code>FOCO TOTAL</code> aparecem acima e representam as prioridades atuais do usuário.</li>
+        <li>Concursos <code>NA MIRA</code> ficam abaixo para oportunidades que o usuário quer guardar para focar no futuro.</li>
+        <li>Os cards podem ser movidos e reorganizados entre os grupos por meio de clique + arrastar.</li>
+        <li>A ordem escolhida fica salva nos dados do concurso.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Bips confortáveis nos cronômetros</h2>
+      <ul>
+        <li>O cronômetro regressivo agora toca um aviso sonoro curto quando chega a 00:00:00.</li>
+        <li>O Pomodoro também ganhou bips.</li>
+        <li>Cronômetros regressivos iniciados pelo ciclo de estudos agora continuam rodando após bater a meta; o tempo excedente aparece como extra e entra no total da sessão.</li>
+        <li>O Pomodoro ganhou botão de reset total para descartar o ciclo atual e voltar direto ao ciclo 1.</li>
+        <li>Os usuários também podem abrir a configuração do cronômetro, carregar um MP3 próprio, testar o som, ajustar volume e voltar ao bip padrão.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Painel da Prova</h2>
+      <ul>
+        <li>O Painel da Prova ganhou o método <code>Média por áreas (0-10)</code>, permitindo fórmulas como <code>MF = (Conhecimentos Gerais + 2x Conhecimentos Específicos) / 3</code> e cálculo automático preciso nos simulados.</li>
+        <li>O Painel da Prova agora permite configurar nota mínima por bloco e por matéria. Ao realizar um simulado com notas abaixo das mínimas, ele mostra onde você reprovou.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Bugs e correções</h2>
+      <ul>
+        <li>Cards finalizados no ciclo de estudos continuam visualmente apagados, mas agora ficam opacos para esconder a linha pontilhada de rota que passava por trás deles.</li>
+        <li>Simulados calculados automaticamente pelo Painel da Prova agora indicam reprovação específica quando o usuário fica abaixo da nota mínima de um bloco ou matéria.</li>
+      </ul>
+    </section>
+
+    <a class="back" href="ajuda.html">Voltar para Ajuda</a>
+  </main>
+</body>
+
+</html>

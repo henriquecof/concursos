@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="theme.js"></script>
+  <title>Track Concursos - Notas v1.0.4</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0f14;
+      --bg2: #13161e;
+      --bg3: #1a1e2a;
+      --border: #252836;
+      --accent: #4f8ef7;
+      --text: #e8eaf2;
+      --text2: #f1f2f6;
+      --text3: #a1a6c2;
+      --sans: 'Inter', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0 }
+    body { min-height: 100vh; background: var(--bg); color: var(--text); font-family: var(--sans); padding: 42px 22px }
+    .wrap { max-width: 940px; margin: 0 auto }
+    .head { display: flex; align-items: center; gap: 18px; margin-bottom: 24px }
+    .logo { width: 82px; height: 82px; object-fit: contain; flex-shrink: 0 }
+    h1 { font-size: 30px; line-height: 1.1; margin-bottom: 8px }
+    .lead { color: var(--text3); font-size: 15px; line-height: 1.7; max-width: 780px }
+    .badge { display: inline-flex; padding: 5px 11px; border: 1px solid rgba(79,142,247,.32); border-radius: 999px; color: var(--accent); font-size: 12px; font-weight: 800; margin-bottom: 10px }
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 24px; margin-bottom: 16px }
+    h2 { font-size: 16px; margin-bottom: 12px; color: var(--text2) }
+    p, li { font-size: 14px; line-height: 1.7; color: var(--text3) }
+    ul { padding-left: 18px }
+    li + li { margin-top: 4px }
+    code { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 1px 5px; color: var(--text2) }
+    a { color: var(--accent); text-decoration: none; font-weight: 700 }
+    .back { display: inline-flex; margin-top: 8px }
+    @media (max-width:760px) {
+      body { padding: 28px 16px }
+      .head { align-items: flex-start }
+      .logo { width: 64px; height: 64px }
+      h1 { font-size: 25px }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="wrap">
+    <div class="head">
+      <img class="logo" src="assets/logo-oficial-track-concursos.png" alt="Track Concursos">
+      <div>
+        <span class="badge">v1.0.4</span>
+        <h1>Notas da atualização</h1>
+        <p class="lead">Atualização focada em organização dos concursos, Flashcards, painel da prova, métricas para print, ferramentas de links com IA e polimento visual.</p>
+      </div>
+    </div>
+
+    <section class="card">
+      <h2>Meus Concursos</h2>
+      <ul>
+        <li>A aba <code>Meus Concursos</code> agora separa concursos ativos em <code>FOCO TOTAL</code> e <code>NA MIRA</code>.</li>
+        <li>Os cards ativos podem ser reorganizados arrastando pelo topo do card.</li>
+        <li>A ordem e o grupo escolhido ficam salvos por concurso.</li>
+        <li>Cards pré-edital ganharam mais espaço para nomes de cargos longos.</li>
+        <li>O progresso dos cards agora mostra tópicos e subtópicos, com porcentagem combinada do edital.</li>
+        <li>Os cards exibem salário abaixo do cargo, em fonte menor e formato compacto para adicionais.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Sidebar do concurso</h2>
+      <ul>
+        <li>O card lateral do concurso agora usa logo maior e consistente entre Dashboard, Métricas, Flashcards, Simulados, Revisões e Matérias.</li>
+        <li>Abaixo da banca, o app mostra cargo e salário quando essas informações estiverem cadastradas.</li>
+        <li>Salários com adicionais mostram apenas o primeiro valor, seguido de <code>+...</code>.</li>
+        <li>O tooltip do card lateral foi atualizado para <code>Clique para ver ou editar informações sobre o concurso</code>.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Flashcards</h2>
+      <ul>
+        <li>A área de Flashcards foi integrada ao menu lateral e pode ser acessada a partir das demais abas.</li>
+        <li>Flashcards agora abre direto dentro da Dashboard quando acessado pelo menu.</li>
+        <li>Importação aceita CSV e JSON no mesmo fluxo.</li>
+        <li>Importador reconhece questões comentadas vindas de formatos como NotebookLM.</li>
+        <li>O editor passou a separar alternativa e justificativa de cada alternativa.</li>
+        <li>A tela de estudo ficou mais confortável para textos longos.</li>
+        <li>Baralhos podem ser sincronizados com tópicos ou subtópicos do edital.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Painel da prova</h2>
+      <ul>
+        <li>O painel de prova passou a aceitar matérias dentro de um bloco sem distribuição fixa.</li>
+        <li>Campos de questões e peso aceitam marcadores <code>X</code> e <code>Y</code> quando o edital informa apenas o total do bloco.</li>
+        <li>O simulado automático calcula blocos agrupados pelo total de questões e peso do bloco.</li>
+        <li>O fluxo <code>Dados do bloco</code> foi refinado para deixar campos desativados mais claros.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Dashboard e métricas</h2>
+      <ul>
+        <li>O bloco semanal da Dashboard ganhou gráficos em formato doughnut para horas por matéria e questões certas/erradas.</li>
+        <li>A tabela de matérias mostra tópicos e subtópicos separados no progresso de cada matéria.</li>
+        <li>O recorte semanal passou a usar semana fixa de domingo a sábado.</li>
+        <li>Métricas ganhou o bloco <code>Estudos do dia</code>, com horas, questões, sessões e opção de print.</li>
+        <li><code>Estudos do dia</code> abre uma versão vertical para print com logo do Track Concursos, faixa do usuário e métricas do dia.</li>
+        <li><code>Distribuição por Matéria</code> abre uma versão vertical para print com faixa, edital coberto, questões, acertos e detalhamento por matéria.</li>
+        <li>O card <code>Carga estudada / Meta do ciclo</code> agora abre um comparativo por matéria do ciclo.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Ferramentas de links e PDFs</h2>
+      <ul>
+        <li><code>Prompt Gemini Google Drive</code> copia um prompt completo com a estrutura JSON da matéria anexada no final.</li>
+        <li>O aviso do prompt foi separado do conteúdo enviado para a IA.</li>
+        <li><code>Importar Links</code> abre um popup premium com opção de colar o JSON retornado pela IA ou importar um arquivo <code>.json</code>.</li>
+        <li>O resumo da importação aparece em modal premium com contadores de adicionados, repetidos, ignorados, destinos não encontrados e links inválidos.</li>
+        <li><code>Exportar Template .JSON</code> explica o uso do template para cruzar PDFs locais no PC com uma IA + IDE.</li>
+        <li>O fluxo informa que um guia passo a passo para linkar PDFs offline será disponibilizado no site futuramente.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Conforto e manutenção</h2>
+      <ul>
+        <li>Adicionada checagem diária de nova versão no GitHub, com cache para evitar consultas repetidas.</li>
+        <li>Na aba Revisões, clicar no nome do tópico ou subtópico abre diretamente o item correspondente na aba da matéria.</li>
+        <li>O botão lateral de voltar tenta fechar popups, modais, Flashcards e tópicos abertos antes de navegar.</li>
+        <li>Snapshots de perfis ganharam política de retenção automática.</li>
+        <li>O hub interno de DEV Tools foi preparado, mas permanece escondido até ficar pronto para uso público.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Bugs e correções</h2>
+      <ul>
+        <li>Corrigido desalinhamento dos logos nos cards de concursos.</li>
+        <li>Corrigida quebra indevida do texto <code>Faixa Branca</code>.</li>
+        <li>Corrigido tamanho inconsistente do logo do concurso ao navegar para outras abas.</li>
+        <li>Corrigida exibição de salário composto no card lateral.</li>
+        <li>Ajustadas validações e textos do painel da prova para blocos com matérias sem distribuição fixa.</li>
+        <li>Melhorado o comportamento de voltar dentro de modais, Flashcards e estados internos do app.</li>
+      </ul>
+    </section>
+
+    <a class="back" href="ajuda.html">Voltar para Ajuda</a>
+  </main>
+</body>
+
+</html>

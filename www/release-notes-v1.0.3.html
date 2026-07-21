@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="theme.js"></script>
+  <title>Track Concursos - Notas v1.0.3</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0f14;
+      --bg2: #13161e;
+      --bg3: #1a1e2a;
+      --border: #252836;
+      --accent: #4f8ef7;
+      --text: #e8eaf2;
+      --text2: #f1f2f6;
+      --text3: #a1a6c2;
+      --sans: 'Inter', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0 }
+    body { min-height: 100vh; background: var(--bg); color: var(--text); font-family: var(--sans); padding: 42px 22px }
+    .wrap { max-width: 900px; margin: 0 auto }
+    .head { display: flex; align-items: center; gap: 18px; margin-bottom: 24px }
+    .logo { width: 82px; height: 82px; object-fit: contain; flex-shrink: 0 }
+    h1 { font-size: 30px; line-height: 1.1; margin-bottom: 8px }
+    .lead { color: var(--text3); font-size: 15px; line-height: 1.7; max-width: 760px }
+    .badge { display: inline-flex; padding: 5px 11px; border: 1px solid rgba(79,142,247,.32); border-radius: 999px; color: var(--accent); font-size: 12px; font-weight: 800; margin-bottom: 10px }
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 24px; margin-bottom: 16px }
+    h2 { font-size: 16px; margin-bottom: 12px; color: var(--text2) }
+    p, li { font-size: 14px; line-height: 1.7; color: var(--text3) }
+    ul { padding-left: 18px }
+    li + li { margin-top: 4px }
+    code { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 1px 5px; color: var(--text2) }
+    a { color: var(--accent); text-decoration: none; font-weight: 700 }
+    .back { display: inline-flex; margin-top: 8px }
+    @media (max-width:760px) {
+      body { padding: 28px 16px }
+      .head { align-items: flex-start }
+      .logo { width: 64px; height: 64px }
+      h1 { font-size: 25px }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="wrap">
+    <div class="head">
+      <img class="logo" src="assets/logo-oficial-track-concursos.png" alt="Track Concursos">
+      <div>
+        <span class="badge">v1.0.3</span>
+        <h1>Notas da atualização</h1>
+        <p class="lead">Atualização pequena focada em ajustes de uso diário, métricas retroativas e acabamento visual.</p>
+      </div>
+    </div>
+
+    <section class="card">
+      <h2>Lançamentos retroativos</h2>
+      <ul>
+        <li>Lançamentos manuais de horas e questões agora permitem escolher a data do estudo.</li>
+        <li>Se você registrar hoje um estudo feito ontem, ele entra no dia correto nas métricas.</li>
+        <li>O estudo semanal da Dashboard, o calendário/heatmap de métricas e o histórico passam a respeitar a data informada.</li>
+        <li>A contagem de semanas seguidas de estudo também passa a considerar atividades lançadas retroativamente.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Flashcards</h2>
+      <ul>
+        <li>Corrigido um bug visual em que a contagem superior de cards não atualizava ao importar, criar ou excluir cards dentro de um baralho aberto.</li>
+        <li>A aba lateral já atualizava instantaneamente; agora a tela principal de Flashcards acompanha a mudança sem precisar trocar de aba ou recarregar.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Dashboard</h2>
+      <ul>
+        <li>No estudo semanal, cada dia da semana agora mostra um resumo ao passar o mouse, com horas estudadas, questões feitas, sessões registradas e flashcards revisados naquele dia.</li>
+        <li>Matérias finalizadas manualmente no ciclo agora podem virar OK depois, quando novos lançamentos de estudo atingirem a carga horária planejada.</li>
+        <li>A frase motivacional da faixa agora é clicável e pode ser personalizada por concurso, mantendo o texto de Josué como padrão.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Popups e confirmações</h2>
+      <ul>
+        <li>Confirmações nativas do navegador foram substituídas por modais modernos no estilo do Track Concursos.</li>
+        <li>Ações como excluir flashcards, simulados, revisões, tópicos, concursos, materiais, restaurar backup e descartar tempo de cronômetro agora usam o novo visual padronizado.</li>
+        <li>Os novos modais seguem o tema claro/escuro e usam botões de ação mais claros para confirmar ou cancelar.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Bugs e correções</h2>
+      <ul>
+        <li>Corrigido o refresh parcial dos Flashcards após importação, criação e exclusão.</li>
+        <li>Corrigida a data fixa em lançamentos manuais de estudo e questões.</li>
+        <li>Adicionado resumo rápido por dia no estudo semanal da Dashboard, incluindo flashcards revisados.</li>
+        <li>Corrigido o caso em que uma matéria finalizada antes da meta não recebia OK mesmo depois de atingir a carga horária.</li>
+        <li>Melhorada a consistência visual de diálogos de confirmação espalhados pelo app.</li>
+      </ul>
+    </section>
+
+    <a class="back" href="ajuda.html">Voltar para Ajuda</a>
+  </main>
+</body>
+
+</html>
