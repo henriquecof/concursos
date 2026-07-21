@@ -1582,6 +1582,7 @@ class Api:
     def import_anki_cards(self, anki_deck_name, local_deck_id):
         import urllib.request
         import json
+        import re  # Biblioteca necessária para achar e substituir os códigos {{c1::...}}
         try:
             # 1. Encontrar IDs
             query_payload = json.dumps({
@@ -1600,10 +1601,8 @@ class Api:
             req_info = urllib.request.Request('http://localhost:8765', data=info_payload)
             notes_info = json.loads(urllib.request.urlopen(req_info).read().decode('utf-8')).get('result', [])
 
-            # 3. Formatar os cards procurando os campos corretos
+            # 3. Formatar os cards
             cards_formatados = []
-            
-            # Palavras-chave para tentar adivinhar qual é o campo certo
             nomes_frente = ['pergunta', 'frente', 'front', 'texto', 'enunciado', 'questão']
             nomes_verso = ['resposta', 'verso', 'back', 'comentário', 'gabarito', 'solução']
             
@@ -1620,18 +1619,47 @@ class Api:
                     if any(p in nome_min for p in nomes_verso) and not verso:
                         verso = dados.get('value', '')
                 
-                # Plano B: Se o dono do baralho usou nomes muito estranhos, 
-                # ordenamos pelos campos e tentamos pular a matéria e o assunto.
+                # Plano B se não achar os nomes padrões
                 if not frente or not verso:
                     campos_lista = sorted(campos.values(), key=lambda x: x.get('order', 0))
-                    # Se tiver 4 ou mais campos, assume que 0 e 1 são Matéria/Assunto, 2 e 3 são a Questão.
                     if len(campos_lista) >= 4:
                         frente = campos_lista[2].get('value', '')
                         verso = campos_lista[3].get('value', '')
-                    # Se tiver menos, pega os dois primeiros mesmo.
                     elif len(campos_lista) >= 2:
                         frente = campos_lista[0].get('value', '')
                         verso = campos_lista[1].get('value', '')
+
+                # ==========================================
+                # NOVO: TRATAMENTO DE CARTÕES CLOZE (Omissão)
+                # ==========================================
+                # Verifica se há a sintaxe do Anki {{cX::...}} na frente ou no verso
+                texto_cloze = frente if '{{c' in frente else (verso if '{{c' in verso else None)
+
+                if texto_cloze:
+                    extra = verso if texto_cloze == frente else frente
+
+                    def formatar_frente_cloze(match):
+                        # Pega a dica, se existir, senão usa [...]
+                        dica = match.group(2)
+                        return f"[{dica}]" if dica else "[...]"
+
+                    def formatar_verso_cloze(match):
+                        # Pega a resposta e coloca em negrito para destacar
+                        resposta = match.group(1)
+                        return f"<b>{resposta}</b>"
+
+                    # Regra para achar {{cX::resposta::dica}} ou {{cX::resposta}}
+                    padrao_cloze = r'\{\{c\d+::(.*?)(?:::([^}]*))?\}\}'
+                    
+                    nova_frente = re.sub(padrao_cloze, formatar_frente_cloze, texto_cloze)
+                    novo_verso = re.sub(padrao_cloze, formatar_verso_cloze, texto_cloze)
+
+                    frente = nova_frente
+                    # Se houver um campo extra (como comentários), anexa ele no verso
+                    if extra and extra != texto_cloze:
+                        verso = f"{novo_verso}<br><br><hr><b>Comentário:</b><br>{extra}"
+                    else:
+                        verso = novo_verso
 
                 cards_formatados.append({"front": frente, "back": verso})
 
@@ -1639,6 +1667,7 @@ class Api:
         
         except Exception as e:
             return {"ok": False, "msg": f"Erro durante a importação no Python: {str(e)}"}
+    
 def export_to_anki(self, anki_deck_name, cards):
         import urllib.request
         import json
